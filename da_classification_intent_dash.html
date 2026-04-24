@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Digital Asset Intelligence — BUFN403 Team 5</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&family=Space+Mono:wght@400;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#E8E6E1;--muted:#9A9793;--faint:#565350;
+  --surface:#1B1A18;--lift:#232220;--lift2:#2C2A28;
+  --rule:rgba(255,255,255,0.07);
+  --gold:#D4A017;
+  --t1:#3DBE7A;--t2:#4A90D9;--t3:#B39DFA;--t4:#F59C55;--t5:#E05252;
+  --ca:#4A90D9;--cb:#3DBE7A;--cc:#B39DFA;--cd:#F59C55;--ce:#8EA3B8;
+}
+html,body{height:100%;background:#0F0E0C;font-family:'Inter',sans-serif;color:var(--ink);font-size:13px;}
+body{display:flex;align-items:stretch;justify-content:center;padding:20px;}
+.app{display:flex;width:100%;max-width:1220px;height:calc(100vh - 40px);min-height:600px;border-radius:14px;overflow:hidden;border:0.5px solid var(--rule);background:var(--surface);box-shadow:0 40px 120px rgba(0,0,0,0.8);}
+.sb{width:196px;min-width:196px;display:flex;flex-direction:column;background:var(--lift);border-right:0.5px solid var(--rule);}
+.sb-brand{padding:18px 14px 14px;border-bottom:0.5px solid var(--rule);}
+.sb-eye{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.16em;color:var(--faint);text-transform:uppercase;margin-bottom:5px;}
+.sb-name{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;line-height:1.3;}
+.sb-meta{font-family:'Space Mono',monospace;font-size:8.5px;color:var(--faint);margin-top:5px;}
+.nav{flex:1;padding:10px 7px;}
+.ns{font-family:'Space Mono',monospace;font-size:7.5px;letter-spacing:.1em;color:var(--faint);text-transform:uppercase;padding:10px 10px 4px;margin-top:4px;}
+.ni{display:flex;align-items:center;gap:7px;padding:8px 10px;border-radius:7px;cursor:pointer;font-size:11.5px;color:var(--muted);transition:all .15s;border:none;background:none;width:100%;text-align:left;font-family:'Inter',sans-serif;}
+.ni:hover{background:var(--surface);color:var(--ink);}
+.ni.on{background:var(--surface);color:var(--ink);font-weight:500;border-left:2px solid var(--gold);padding-left:8px;}
+.ni-dot{width:5px;height:5px;border-radius:50%;background:var(--gold);opacity:0;flex-shrink:0;}
+.ni.on .ni-dot{opacity:1;}
+.sb-foot{padding:10px 14px;border-top:0.5px solid var(--rule);font-family:'Space Mono',monospace;font-size:8px;color:var(--faint);line-height:1.6;}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+.pnl{display:none;flex:1;flex-direction:column;overflow:hidden;}
+.pnl.on{display:flex;}
+.ph{padding:20px 26px 14px;border-bottom:0.5px solid var(--rule);display:flex;align-items:flex-end;justify-content:space-between;flex-shrink:0;}
+.ph-eye{font-family:'Space Mono',monospace;font-size:8.5px;letter-spacing:.12em;color:var(--gold);text-transform:uppercase;margin-bottom:4px;}
+.ph-title{font-family:'Syne',sans-serif;font-size:21px;font-weight:700;}
+.ph-right{font-family:'Space Mono',monospace;font-size:9px;color:var(--faint);text-align:right;line-height:1.5;}
+.pb{padding:18px 26px;flex:1;overflow-y:auto;}
+.pb::-webkit-scrollbar{width:3px;}
+.pb::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08);border-radius:2px;}
+.badge{display:inline-block;padding:2px 7px;border-radius:4px;font-size:9px;font-family:'Space Mono',monospace;font-weight:700;}
+.fp{padding:3px 10px;border-radius:12px;font-size:10px;cursor:pointer;border:0.5px solid var(--rule);background:transparent;color:var(--muted);font-family:'Space Mono',monospace;transition:all .15s;white-space:nowrap;}
+.fp:hover{border-color:var(--gold);color:var(--gold);}
+.fp.on{background:var(--gold);color:#0F0E0C;border-color:var(--gold);font-weight:700;}
+.filters{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:14px;}
+.sec{background:var(--lift);border-radius:10px;padding:14px;margin-bottom:12px;}
+.sec-t{font-size:8px;font-family:'Space Mono',monospace;color:var(--faint);text-transform:uppercase;letter-spacing:.1em;margin-bottom:9px;}
+.callout{background:var(--lift2);border-left:2.5px solid var(--gold);border-radius:6px;padding:11px 14px;font-size:11px;color:var(--muted);line-height:1.68;margin-bottom:13px;}
+.callout strong{color:var(--ink);font-weight:500;}
+.callout.green{border-left-color:#3DBE7A;}
+.callout.orange{border-left-color:#F59C55;}
+.callout.red{border-left-color:#E05252;}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px;}
+.kcard{background:var(--lift2);border-radius:8px;padding:10px 12px;}
+.kcard-l{font-size:8px;font-family:'Space Mono',monospace;color:var(--faint);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px;}
+.kcard-v{font-family:'Space Mono',monospace;font-size:16px;font-weight:700;}
+.kcard-v.gold{color:var(--gold);}
+select{background:var(--lift);color:var(--ink);border:0.5px solid var(--rule);border-radius:7px;padding:7px 11px;font-size:13px;font-family:'Inter',sans-serif;cursor:pointer;outline:none;width:100%;}
+select:focus{border-color:var(--gold);}
+option{background:#232220;}
+.trow{display:grid;align-items:center;gap:5px;padding:8px 5px;border-bottom:0.5px solid var(--rule);cursor:pointer;border-radius:5px;transition:background .1s;}
+.trow:hover{background:var(--lift);}
+.trow.hdr{cursor:default;padding:4px 5px 7px;}
+.trow.hdr:hover{background:none;}
+.hd{font-size:8px;font-family:'Space Mono',monospace;color:var(--faint);text-transform:uppercase;letter-spacing:.06em;}
+.hd.r{text-align:right;}
+.dim-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.dim-label{font-size:9px;font-family:'Space Mono',monospace;color:var(--faint);width:80px;flex-shrink:0;}
+.dim-track{flex:1;height:5px;background:rgba(255,255,255,0.07);border-radius:3px;overflow:hidden;}
+.dim-fill{height:100%;border-radius:3px;transition:width 0.6s;}
+.dim-val{font-size:10px;font-family:'Space Mono',monospace;width:30px;text-align:right;font-weight:700;}
+.evidence-section{border-top:0.5px solid var(--rule);margin-top:12px;padding-top:12px;}
+.ev-type{font-size:8px;font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;}
+.ev-row{display:flex;gap:8px;align-items:flex-start;padding:5px 0;border-bottom:0.5px solid rgba(255,255,255,0.04);}
+.ev-row:last-child{border-bottom:none;}
+.ev-src{font-size:9px;font-family:'Space Mono',monospace;padding:2px 6px;border-radius:3px;white-space:nowrap;flex-shrink:0;margin-top:1px;}
+.ev-txt{font-size:10.5px;color:var(--muted);line-height:1.5;}
+.cl-card{background:var(--lift);border-radius:10px;padding:14px;cursor:pointer;border:0.5px solid var(--rule);transition:all .15s;margin-bottom:10px;}
+.cl-card.sel{border-color:var(--gold);background:var(--lift2);}
+.cl-card:hover{border-color:rgba(212,160,23,0.4);}
+.val-box{background:linear-gradient(135deg,rgba(61,190,122,0.07),rgba(61,190,122,0.02));border:0.5px solid rgba(61,190,122,0.28);border-radius:10px;padding:14px;margin-bottom:12px;}
+.val-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:#3DBE7A;margin-bottom:6px;}
+.val-body{font-size:11px;color:var(--muted);line-height:1.65;}
+.val-body strong{color:var(--ink);}
+.mkk-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
+.mkk{background:var(--lift);border-radius:8px;padding:12px;border-left:2.5px solid var(--gold);}
+.mkk-l{font-size:8px;font-family:'Space Mono',monospace;color:var(--faint);text-transform:uppercase;letter-spacing:.07em;}
+.mkk-v{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;margin-top:3px;}
+.mkk-s{font-size:9px;color:var(--muted);margin-top:1px;}
+.formula{background:var(--lift);border-left:2.5px solid var(--gold);border-radius:5px;padding:10px 14px;margin:8px 0;font-family:'Space Mono',monospace;font-size:9.5px;line-height:1.8;}
+.chips{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px;}
+.chip{padding:4px 10px;border-radius:11px;font-size:10px;font-family:'Space Mono',monospace;cursor:pointer;border:0.5px solid var(--rule);color:var(--muted);transition:all .15s;}
+.chip:hover{border-color:var(--gold);color:var(--gold);}
+.chip.on{color:#0F0E0C;font-weight:700;border-color:transparent;}
+.tl-wrap{position:relative;padding-left:22px;}
+.tl-line{position:absolute;left:8px;top:0;bottom:0;width:1px;background:var(--rule);}
+.tl-item{position:relative;padding:0 0 14px 14px;}
+.tl-dot{position:absolute;left:-5px;top:4px;width:11px;height:11px;border-radius:50%;border:2px solid var(--surface);}
+.tl-d{font-family:'Space Mono',monospace;font-size:8.5px;color:var(--faint);margin-bottom:2px;}
+.tl-e{font-size:12px;font-weight:500;margin-bottom:1px;}
+.tl-s{font-size:10px;color:var(--muted);}
+.score-ring{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;flex-shrink:0;}
+.score-ring-val{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;line-height:1;}
+.score-ring-label{font-family:'Space Mono',monospace;font-size:7px;color:var(--faint);margin-top:2px;}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="sb">
+  <div class="sb-brand">
+    <div class="sb-eye">BUFN403 · Team 5</div>
+    <div class="sb-name">Digital Asset<br>Intelligence</div>
+    <div class="sb-meta">16 banks · 4-dim scoring</div>
+  </div>
+  <nav class="nav">
+    <div class="ns">Status</div>
+    <button class="ni on" onclick="go('overview')"><span class="ni-dot"></span>Overview</button>
+    <button class="ni" onclick="go('method')"><span class="ni-dot"></span>Methodology</button>
+    <button class="ni" onclick="go('updates')"><span class="ni-dot"></span>Latest Developments</button>
+    <div class="ns">Analysis</div>
+    <button class="ni" onclick="go('lb')"><span class="ni-dot"></span>Composite Leaderboard</button>
+    <button class="ni" onclick="go('profile')"><span class="ni-dot"></span>Bank Profile</button>
+    <button class="ni" onclick="go('compare')"><span class="ni-dot"></span>Compare Banks</button>
+    <button class="ni" onclick="go('cluster')"><span class="ni-dot"></span>Cluster Map</button>
+    <div class="ns">Context</div>
+    <button class="ni" onclick="go('timeline')"><span class="ni-dot"></span>Timeline</button>
+    <button class="ni" onclick="go('market')"><span class="ni-dot"></span>Market Data</button>
+  </nav>
+  <div class="sb-foot">Classification & Intent<br>Spring 2026 · ABA/Google</div>
+</div>
+<div class="main">
+
+<!-- OVERVIEW -->
+<div class="pnl on" id="pnl-overview">
+  <div class="ph"><div><div class="ph-eye">Spring 2026 Status Update</div><div class="ph-title">Project Overview</div></div><div class="ph-right">Digital Assets Classification<br>& Intent · Team 5</div></div>
+  <div class="pb">
+    <div class="val-box">
+      <div class="val-title">⬆ Methodology Validation: Schwab Launch Confirmed April 16, 2026</div>
+      <div class="val-body">Our NLP model scored Charles Schwab at <strong>19.81 in Q2 2025</strong> — highest in our dataset — based on executives describing spot crypto trading plans and native custody infrastructure in earnings Q&A. On <strong>April 16, 2026, Schwab launched "Schwab Crypto"</strong> — direct BTC and ETH trading at 75bps. The model flagged this intent <strong>10 months before the product launched</strong>. This confirms that Q&A NLP scores are predictive leading indicators, not trailing descriptions.</div>
+    </div>
+    <div class="three">
+      <div class="sec" style="margin-bottom:0">
+        <div class="sec-t">What We Analyzed</div>
+        <p style="font-size:11px;color:var(--muted);line-height:1.65">We scored <strong style="color:var(--ink)">Q&A sections</strong> of earnings call transcripts — where analysts press executives directly and hedged or absent answers are as informative as specific ones. 128 transcripts, 16 banks, Q1 2024–Q4 2025.</p>
+      </div>
+      <div class="sec" style="margin-bottom:0">
+        <div class="sec-t">50 → 16 → Revised</div>
+        <p style="font-size:11px;color:var(--muted);line-height:1.65">Starting from <strong style="color:var(--ink)">50 banks</strong>, NLP scoring produced 16 with measurable engagement. Post-analysis, 4 were reclassified as <strong style="color:var(--ink)">false positives</strong> (idiomatic "circle back" language). The composite model now surfaces <strong style="color:var(--ink)">12 banks with genuine digital asset engagement</strong>.</p>
+      </div>
+      <div class="sec" style="margin-bottom:0">
+        <div class="sec-t">Three Evidence Layers</div>
+        <p style="font-size:11px;color:var(--muted);line-height:1.65">Every cluster and composite score is supported by <strong style="color:var(--ink)">three independent sources</strong>: (1) original NLP pipeline, (2) Gemini-assisted research provided by our team, and (3) live web research conducted April 2026. No finding rests on a single source.</p>
+      </div>
+    </div>
+    <div class="two">
+      <div class="sec" style="margin-bottom:0">
+        <div class="sec-t">Key Findings</div>
+        <div id="ov-findings"></div>
+      </div>
+      <div class="sec" style="margin-bottom:0">
+        <div class="sec-t">Composite Score Distribution (16 Banks)</div>
+        <div style="position:relative;height:175px;margin-bottom:8px"><canvas id="ovChart"></canvas></div>
+        <div style="font-size:9px;color:var(--faint);line-height:1.5">4-dimensional composite (0–100). Tier 1 ≥80, Tier 2 ≥55, Tier 3 ≥35, Tier 4 ≥15, Tier 5 &lt;15. No bank reached the original Leader threshold (≥15 score + ≥10 terms) in Q&A alone — a key finding about institutional disclosure norms.</div>
+      </div>
+    </div>
+    <div class="callout red">
+      <strong>False positive disclosure:</strong> Wells Fargo, Truist, Bank of Montreal, and TD Bank passed initial NLP screening due to the word "circle" appearing in idiomatic phrases ("circle back," "full circle"). Manual excerpt review confirmed none reference Circle Financial. Their NLP scores are zeroed in the composite model. TD Bank's "strategic investment" refers to its Schwab stake, not a digital asset investment. These banks are retained as Tier 5 (Absent) as useful baseline comparators.
+    </div>
+  </div>
+</div>
+
+<!-- METHODOLOGY -->
+<div class="pnl" id="pnl-method">
+  <div class="ph"><div><div class="ph-eye">Scoring Framework</div><div class="ph-title">Methodology</div></div><div class="ph-right">4 dimensions<br>0–100 composite</div></div>
+  <div class="pb">
+    <div class="callout">We built a four-dimensional composite scoring system to address the fundamental weakness of single-metric NLP: it cannot distinguish a bank that says "crypto" 200 times from one that uses 12 specific product-level terms, and it misses operationally-live banks that underdisclose in Q&A. Each dimension is scored 0–25; composite is 0–100.</div>
+    <div class="two">
+      <div class="sec" style="margin-bottom:0">
+        <div class="sec-t">D1 — NLP Engagement Score (0–25)</div>
+        <p style="font-size:11px;color:var(--muted);line-height:1.65;margin-bottom:8px">Adjusted peak score from our NLP pipeline, log-normalised to 0–25. False positive terms (circle, strategic investment) removed. Log scale prevents Schwab's 19.81 from dominating — it maps to 24.9, while BNY's 9.70 maps to 19.5, preserving meaningful spread.</p>
+        <div class="formula">D1 = min(25, log(adj_peak+1) / log(21) × 25)</div>
+      </div>
+      <div class="sec" style="margin-bottom:0">
+        <div class="sec-t">D2 — Specificity & Depth (0–25)</div>
+        <p style="font-size:11px;color:var(--muted);line-height:1.65;margin-bottom:8px">Addresses volume vs. depth: a bank saying "crypto" 200 times scores the same on D1 as one using 12 specific terms. D2 rewards breadth and product-specific vocabulary.</p>
+        <div class="formula">D2 = min(10, terms×0.85) + specificity×10 + consistency×5<br><br>Specificity = (Custodial+Infra scores) / total score<br>State Street: specificity=1.0 (all Custodial) · PNC: 0.048 (90% General)</div>
+      </div>
+    </div>
+    <div class="two">
+      <div class="sec" style="margin-bottom:0">
+        <div class="sec-t">D3 — Disclosure Mode (0–25)</div>
+        <p style="font-size:11px;color:var(--muted);line-height:1.65;margin-bottom:8px">The most novel dimension. Banks with QnA/Full-transcript ratio >2.0 are <strong style="color:var(--ink)">proactive disclosers</strong> — they discuss DA more in Q&A than prepared remarks, signalling investor-facing confidence. Goldman Sachs (ratio 0.23x) is an <strong style="color:var(--ink)">underdiscloser</strong> — its actual DA activity (GS DAP, tokenized MMFs) appears in scripted remarks but almost never gets raised in Q&A. This dimension surfaces that pattern systematically.</p>
+        <div class="formula">Citi ratio: 3.40x → D3=25 | BNY: 3.16x → D3=25<br>Goldman: 0.23x → D3=5.8 (corrected by D4)</div>
+      </div>
+      <div class="sec" style="margin-bottom:0">
+        <div class="sec-t">D4 — External Research Score (0–25)</div>
+        <p style="font-size:11px;color:var(--muted);line-height:1.65;margin-bottom:8px">Explicitly labeled research-informed and analyst-judged. Scored on three sub-components: confirmed production products launched (0–10), infrastructure depth (0–8), and strategic trajectory (0–7). This dimension is what allows Goldman Sachs (D1=8.6) to reach composite 39.9 despite low NLP scores — its D4 of 22 reflects GS DAP spin-out, tokenized MMF with BNY, EIB digital bond, and $135M Digital Asset investment.</p>
+        <div class="formula">D4 = products_launched(0–10) + infrastructure_depth(0–8) + trajectory(0–7)<br><br>BNY: 10+8+7=25 | Goldman: 8+7+7=22 | TD Bank: 0+0+1=1</div>
+      </div>
+    </div>
+    <div class="sec">
+      <div class="sec-t">Why This Is Better Than Single-Score NLP</div>
+      <div style="font-size:11px;color:var(--muted);line-height:1.7">
+        <strong style="color:var(--ink)">Goldman Sachs problem solved:</strong> Raw NLP ranks Goldman 11th (peak 1.84). Composite ranks it 11th but Tier 3 Building (39.9/100) with correct cluster assignment — its D4 of 22 compensates for systematic underdisclosure in Q&A. A pure NLP model would classify Goldman as "minimally engaged" when it is actually one of the most operationally active banks in capital markets tokenization.<br><br>
+        <strong style="color:var(--ink)">PNC specificity problem solved:</strong> PNC's NLP peak is 5.87 (Developing), but its D2 specificity is 0.048 — meaning 95% of its score comes from General vocabulary ("crypto," "stablecoin" broadly). This correctly identifies PNC as a reactive discloser responding to analyst pressure, not an operational builder. Its composite (49.6) places it lower than US Bancorp (58.6) despite similar NLP peaks, because USB has a specificity ratio of 0.369 and active Custodial scores confirming real custody operations.<br><br>
+        <strong style="color:var(--ink)">False positives isolated:</strong> Wells Fargo, Truist, BMO, TD Bank all have D1=0 (adjusted), D2=0, D3=0 after false positive removal. They reach composite scores of 1–9 only via D4 trajectory signals (WFUSD trademark, Bitcoin ETF access). This is the correct interpretation — these banks have planning signals but no operational engagement in our data window.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LATEST DEVELOPMENTS -->
+<div class="pnl" id="pnl-updates">
+  <div class="ph"><div><div class="ph-eye">Post-Data · April 2026</div><div class="ph-title">Latest Developments</div></div><div class="ph-right">Research: April 2026</div></div>
+  <div class="pb">
+    <div class="val-box" style="margin-bottom:12px">
+      <div class="val-title">The GENIUS Act — Root Cause of Q2 2025 Inflection</div>
+      <div class="val-body">The GENIUS Act was signed into law <strong>July 18, 2025</strong> (Senate 68–30, House 308–122). It established the first federal regulatory framework for payment stablecoins: 1:1 reserves, mandatory audits, clear bank-subsidiary issuance pathway. <strong>9 of 16 banks recorded their peak NLP score in Q2 2025</strong> — this is the GENIUS Act's Senate passage (June 17) generating a wave of analyst stablecoin questions in Q2 earnings calls. The inflection is regulatory in origin, not coincidental.</div>
+    </div>
+    <div class="sec"><div class="sec-t">Confirmed Developments Since Q4 2025 (Our Data Cutoff)</div><div id="dev-list"></div></div>
+    <div class="callout orange"><strong>Cross-cluster development:</strong> PNC, Citi, and Wells Fargo are jointly exploring a stablecoin through <strong>Early Warning Services</strong> (Zelle's parent). This is three banks from three different clusters collaborating on shared infrastructure — a development our individual bank scores could not predict but our cluster analysis anticipated as a logical convergence between Clusters B and D.</div>
+  </div>
+</div>
+
+<!-- LEADERBOARD -->
+<div class="pnl" id="pnl-lb">
+  <div class="ph"><div><div class="ph-eye">4-Dimensional Composite Score</div><div class="ph-title">Composite Leaderboard</div></div><div class="ph-right" id="lb-meta"></div></div>
+  <div class="pb">
+    <div class="callout">Banks ranked by <strong>composite score (0–100)</strong> combining four independent dimensions. This is not a raw NLP ranking — Goldman Sachs ranks 11th in NLP but correctly appears in Tier 3 due to strong external research (D4=22). Click any bank to open its full profile. <strong>False positive banks</strong> (wells Fargo, Truist, BMO, TD Bank) have zero adjusted NLP scores and are retained as Tier 5 reference points.</div>
+    <div class="filters" id="lb-filters">
+      <span class="fp on" onclick="filtLb('all',this)">All 16</span>
+      <span class="fp" onclick="filtLb('Tier 1',this)">Tier 1 · Leader (2)</span>
+      <span class="fp" onclick="filtLb('Tier 2',this)">Tier 2 · Advanced (4)</span>
+      <span class="fp" onclick="filtLb('Tier 3',this)">Tier 3 · Building (5)</span>
+      <span class="fp" onclick="filtLb('Tier 4',this)">Tier 4 · Watching (1)</span>
+      <span class="fp" onclick="filtLb('Tier 5',this)">Tier 5 · Absent (4)</span>
+    </div>
+    <div id="lb-body"></div>
+  </div>
+</div>
+
+<!-- PROFILE -->
+<div class="pnl" id="pnl-profile">
+  <div class="ph"><div><div class="ph-eye">Individual Analysis</div><div class="ph-title">Bank Profile</div></div></div>
+  <div class="pb">
+    <div style="margin-bottom:12px"><select id="bank-sel" onchange="renderProfile()"></select></div>
+    <div style="display:flex;gap:12px;margin-bottom:12px;align-items:stretch">
+      <div class="score-ring" id="prof-ring" style="border:3px solid var(--gold)"><span class="score-ring-val" id="ring-val">—</span><span class="score-ring-label">/ 100</span></div>
+      <div style="flex:1;display:flex;gap:7px;flex-wrap:wrap" id="prof-stats"></div>
+    </div>
+    <div class="callout" id="prof-explain"></div>
+    <div class="sec" style="margin-bottom:12px">
+      <div class="sec-t">Score Composition — All 4 Dimensions</div>
+      <div id="prof-dims"></div>
+    </div>
+    <div class="two">
+      <div class="sec">
+        <div class="sec-t">DA Score by Quarter (NLP)</div>
+        <div style="position:relative;height:120px"><canvas id="tlChart"></canvas></div>
+        <div style="font-size:9.5px;color:var(--faint);margin-top:6px;line-height:1.5">Each point = one Q&A earnings session. Green = Advanced quarter. Gold = Developing. Grey = Silent or false positive.</div>
+      </div>
+      <div class="sec">
+        <div class="sec-t">Sub-Score Breakdown — Peak Quarter</div>
+        <div style="position:relative;height:120px"><canvas id="bkChart"></canvas></div>
+        <div style="font-size:9.5px;color:var(--faint);margin-top:6px;line-height:1.5">Hover for what each category means. High Custodial = holding assets. High Infra = building platforms. High General = broad discussion without specific product.</div>
+      </div>
+    </div>
+    <div class="sec" style="margin-bottom:12px"><div class="sec-t">Transcript Excerpts — Peak Quarter</div><div id="ev-list"></div></div>
+    <div class="sec"><div class="sec-t">Terms Detected Per Quarter</div><div id="terms-list"></div></div>
+  </div>
+</div>
+
+<!-- COMPARE -->
+<div class="pnl" id="pnl-compare">
+  <div class="ph"><div><div class="ph-eye">Side by Side</div><div class="ph-title">Compare Banks</div></div><div class="ph-right">up to 4 banks</div></div>
+  <div class="pb">
+    <div class="callout">Select up to <strong>4 banks</strong>. The dimension breakdown reveals banks with similar composites but fundamentally different drivers — e.g. Goldman (D4-heavy, underdiscloser) vs Schwab (D1+D3-heavy, proactive discloser). Both Tier 3, completely different strategic postures.</div>
+    <div style="font-size:9px;color:var(--faint);font-family:'Space Mono',monospace;margin-bottom:7px" id="cmp-lim">0 / 4 selected</div>
+    <div class="chips" id="cmp-chips"></div>
+    <div id="cmp-content" style="display:none">
+      <div class="two">
+        <div class="sec"><div class="sec-t">Composite vs NLP Peak</div><div style="position:relative;height:180px"><canvas id="cmpBar"></canvas></div></div>
+        <div class="sec"><div class="sec-t">Quarter-by-Quarter NLP Trend</div><div style="position:relative;height:180px"><canvas id="cmpLine"></canvas></div></div>
+      </div>
+      <div class="sec" style="margin-bottom:12px"><div class="sec-t">Head-to-Head — All Dimensions</div><table id="cmp-tbl" style="width:100%;border-collapse:collapse;font-size:11px"></table></div>
+      <div class="sec"><div class="sec-t">Dimension Breakdown (radar)</div><div style="position:relative;height:200px"><canvas id="cmpRadar"></canvas></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- CLUSTER -->
+<div class="pnl" id="pnl-cluster">
+  <div class="ph"><div><div class="ph-eye">Strategic Groupings</div><div class="ph-title">Cluster Map</div></div><div class="ph-right">3-layer evidence<br>click to explore</div></div>
+  <div class="pb">
+    <div class="callout">Clusters are based on <strong>what banks are doing</strong>, not how much they score. The specificity ratio (Custodial+Infrastructure / Total) and sub-score composition drive cluster assignment, corrected by external research. Click any cluster to see banks, capability ratings, all three evidence layers, and their use cases.</div>
+    <div id="cl-cards"></div>
+    <div id="cl-detail"></div>
+  </div>
+</div>
+
+<!-- TIMELINE -->
+<div class="pnl" id="pnl-timeline">
+  <div class="ph"><div><div class="ph-eye">Industry Milestones</div><div class="ph-title">Timeline 2020–2026</div></div></div>
+  <div class="pb">
+    <div class="callout">The two most significant events for our analysis: <strong>SAB 121 rescinded (Dec 2024)</strong> removed the balance sheet liability that made bank custody economically unviable. The <strong>GENIUS Act (Jul 18, 2025)</strong> created the first federal stablecoin framework. Together, these explain the Q2 2025 inflection visible across 9 of 16 banks in our NLP data.</div>
+    <div class="filters" id="tl-filters">
+      <span class="fp on" onclick="filtTl('all',this)">All</span>
+      <span class="fp" onclick="filtTl('Regulatory',this)">Regulatory</span>
+      <span class="fp" onclick="filtTl('Custody',this)">Custody</span>
+      <span class="fp" onclick="filtTl('Infrastructure',this)">Infrastructure</span>
+      <span class="fp" onclick="filtTl('Capital Markets',this)">Capital Markets</span>
+      <span class="fp" onclick="filtTl('Retail',this)">Retail</span>
+    </div>
+    <div class="tl-wrap"><div class="tl-line"></div><div id="tl-items"></div></div>
+  </div>
+</div>
+
+<!-- MARKET -->
+<div class="pnl" id="pnl-market">
+  <div class="ph"><div><div class="ph-eye">Industry Context</div><div class="ph-title">Market Data</div></div></div>
+  <div class="pb">
+    <div class="callout"><strong>Now ($237B)</strong> = current stablecoin market cap (early 2026). <strong>Base case ($1.9T)</strong> = Citi GPS moderate scenario — GENIUS Act implemented at measured pace, major banks launch stablecoins incrementally. <strong>Bull case ($4T)</strong> = Citi GPS high-adoption scenario — global interoperability, simultaneous major bank launches, CBDC convergence. Our NLP data sits at the very beginning of this curve.</div>
+    <div class="mkk-grid">
+      <div class="mkk"><div class="mkk-l">JPM Kinexys Daily</div><div class="mkk-v">$5B</div><div class="mkk-s">processed/day (2026)</div></div>
+      <div class="mkk"><div class="mkk-l">Tokenization 2030</div><div class="mkk-v">$5T+</div><div class="mkk-s">Citi GPS projection</div></div>
+      <div class="mkk"><div class="mkk-l">Stablecoin Base 2030</div><div class="mkk-v">$1.9T</div><div class="mkk-s">Citi GPS base case</div></div>
+      <div class="mkk"><div class="mkk-l">BNY ETP Coverage</div><div class="mkk-v">80%+</div><div class="mkk-s">of all US/CA/EMEA crypto ETPs</div></div>
+    </div>
+    <div class="two">
+      <div class="sec"><div class="sec-t">Stablecoin Market Scenarios — Citi GPS ($B)</div><div style="position:relative;height:175px"><canvas id="mkt1"></canvas></div></div>
+      <div class="sec"><div class="sec-t">Composite Score vs NLP Peak — All 16 Banks</div><div style="position:relative;height:175px"><canvas id="mkt2"></canvas></div><div style="font-size:9px;color:var(--faint);margin-top:6px">Points above the diagonal = composite higher than NLP alone suggests (Goldman). Below = NLP higher than composite (false positives removed).</div></div>
+    </div>
+    <div class="sec"><div class="sec-t">Institutional Projections & Benchmarks</div><div id="proj-list"></div></div>
+  </div>
+</div>
+
+</div></div>
+
+<script>
+Chart.defaults.color='#9A9793';
+Chart.defaults.borderColor='rgba(255,255,255,0.05)';
+
+// ── COMPLETE DATA ──────────────────────────────────────────
+const SCORES={
+  'BNY Mellon':     {ticker:'BK', cluster:'A',d1:19.5,d2:15.9,d3:25.0,d4:25,comp:85.4,tier:'Tier 1',nlp_peak:9.70,adj_avg:2.58,real_terms:11,specificity:0.222,disclosure:3.16,consistency:0.875,active:7,fp:false},
+  'Charles Schwab': {ticker:'SCHW',cluster:'C',d1:24.9,d2:14.7,d3:22.4,d4:21,comp:83.0,tier:'Tier 1',nlp_peak:19.81,adj_avg:6.01,real_terms:10,specificity:0.245,disclosure:2.70,consistency:0.750,active:6,fp:false},
+  'Citi':           {ticker:'C',  cluster:'B',d1:16.9,d2:10.3,d3:25.0,d4:21,comp:73.2,tier:'Tier 2',nlp_peak:6.79,adj_avg:1.86,real_terms:7, specificity:0.118,disclosure:3.40,consistency:0.625,active:5,fp:false},
+  'State Street':   {ticker:'STT',cluster:'A',d1:11.8,d2:20.1,d3:16.0,d4:21,comp:68.9,tier:'Tier 2',nlp_peak:3.19,adj_avg:1.92,real_terms:6, specificity:1.000,disclosure:1.07,consistency:1.000,active:8,fp:false},
+  'JPMorgan':       {ticker:'JPM',cluster:'B',d1:15.6,d2:12.7,d3:14.2,d4:24,comp:66.5,tier:'Tier 2',nlp_peak:5.72,adj_avg:1.09,real_terms:9, specificity:0.322,disclosure:1.15,consistency:0.375,active:3,fp:false},
+  'US Bancorp':     {ticker:'USB',cluster:'D',d1:14.0,d2:13.0,d3:14.6,d4:17,comp:58.6,tier:'Tier 2',nlp_peak:4.53,adj_avg:1.27,real_terms:8, specificity:0.369,disclosure:1.00,consistency:0.500,active:4,fp:false},
+  'American Express':{ticker:'AXP',cluster:'C',d1:17.5,d2:8.2, d3:14.2,d4:13,comp:52.9,tier:'Tier 3',nlp_peak:7.42,adj_avg:1.01,real_terms:7, specificity:0.040,disclosure:1.00,consistency:0.375,active:3,fp:false},
+  'Bank of America':{ticker:'BAC',cluster:'D',d1:12.4,d2:9.7, d3:13.8,d4:15,comp:50.9,tier:'Tier 3',nlp_peak:3.51,adj_avg:0.71,real_terms:4, specificity:0.501,disclosure:1.00,consistency:0.250,active:2,fp:false},
+  'PNC':            {ticker:'PNC',cluster:'D',d1:15.8,d2:6.6, d3:14.2,d4:13,comp:49.6,tier:'Tier 3',nlp_peak:5.87,adj_avg:1.21,real_terms:5, specificity:0.048,disclosure:1.00,consistency:0.375,active:3,fp:false},
+  'Morgan Stanley': {ticker:'MS', cluster:'D',d1:8.9, d2:7.0, d3:14.2,d4:11,comp:41.1,tier:'Tier 3',nlp_peak:1.96,adj_avg:0.42,real_terms:4, specificity:0.168,disclosure:1.00,consistency:0.375,active:3,fp:false},
+  'Goldman Sachs':  {ticker:'GS', cluster:'B',d1:8.6, d2:3.5, d3:5.8, d4:22,comp:39.9,tier:'Tier 3',nlp_peak:1.84,adj_avg:0.31,real_terms:1, specificity:0.141,disclosure:0.23,consistency:0.250,active:2,fp:false},
+  'Capital One':    {ticker:'COF',cluster:'E',d1:6.0, d2:3.0, d3:13.8,d4:8, comp:30.8,tier:'Tier 4',nlp_peak:1.07,adj_avg:0.17,real_terms:2, specificity:0.000,disclosure:1.00,consistency:0.250,active:2,fp:false},
+  'Wells Fargo':    {ticker:'WFC',cluster:'E',d1:0.0, d2:0.0, d3:0.0, d4:9, comp:9.0, tier:'Tier 5',nlp_peak:0.00,adj_avg:0.00,real_terms:0, specificity:0.000,disclosure:1.00,consistency:0.000,active:0,fp:true},
+  'Truist':         {ticker:'TFC',cluster:'E',d1:0.0, d2:0.0, d3:0.0, d4:3, comp:3.0, tier:'Tier 5',nlp_peak:0.00,adj_avg:0.00,real_terms:0, specificity:0.000,disclosure:1.00,consistency:0.000,active:0,fp:true},
+  'Bank of Montreal':{ticker:'BMO',cluster:'E',d1:0.0,d2:0.0, d3:0.0, d4:2, comp:2.0, tier:'Tier 5',nlp_peak:0.00,adj_avg:0.00,real_terms:0, specificity:0.000,disclosure:1.00,consistency:0.000,active:0,fp:true},
+  'TD Bank':        {ticker:'TD', cluster:'E',d1:0.0, d2:0.0, d3:0.0, d4:1, comp:1.0, tier:'Tier 5',nlp_peak:0.00,adj_avg:0.00,real_terms:0, specificity:0.000,disclosure:1.00,consistency:0.000,active:0,fp:true},
+};
+
+const QNA={
+  'BNY Mellon':    {quarters:["Q1 2024","Q2 2024","Q3 2024","Q4 2024","Q1 2025","Q2 2025","Q3 2025","Q4 2025"],scores:[0.2,0.42,0,3.07,3.14,1.06,9.70,3.03],cust:[0.2,0.42,0,0.92,0.63,0.21,1.72,0.93],infra:[0,0,0,0,0.21,0,0.43,0.7],fintech:[0,0,0,2.15,0.63,0,0,0],gen:[0,0,0,0,1.67,0.85,7.55,1.4],terms:["custody","custody","","circle; fintech; custodian; custody","stablecoin; bitcoin; circle; digital currency; tokenization; custody","bitcoin; digital asset; custody","stablecoin; bitcoin; digital asset custody; digital asset; tokenization; crypto; custody","stablecoin; digital asset custody; digital asset; tokenized deposit; custody"],peak_q:"Q3 2025",ex1:"...digital asset custody. We can custody. We're the first US G-SIB to natively custody Bitcoin and other digital assets. It's stablecoins, yes, but it's also this whole mobility conversation.",ex2:"...we've always seen digital assets as a long-term play. We're in the business of looking after things. Digital asset custody is a natural extension — connecting traditional and on-chain rails.",research:"$57.8T AuC/A. RLUSD custody (Jul 2025). BSRXX stablecoin reserves fund (Nov 2025). 80%+ of all US/Canada/EMEA crypto ETP fund services. 50% of all tokenized fund assets globally. CEO Vince: 'future of crypto runs through big banks' (Mar 2026)."},
+  'Charles Schwab':{quarters:["Q1 2024","Q2 2024","Q3 2024","Q4 2024","Q1 2025","Q2 2025","Q3 2025","Q4 2025"],scores:[0,0,3.03,6.07,3.92,19.81,12.66,2.56],cust:[0,0,3.03,0.81,0,0.75,0.67,0.73],infra:[0,0,0,0,0,4.11,4.66,0],fintech:[0,0,0,0,0,1.12,1,0.37],gen:[0,0,0,5.26,3.92,13.83,6.33,1.46],terms:["","","custody","custody; crypto","bitcoin; crypto","cryptocurrency; stablecoin; bitcoin; blockchain; ethereum; circle; tokenization; crypto; custody","blockchain; coinbase; crypto; tokenization; custody","fintech; custody; crypto"],peak_q:"Q2 2025",ex1:"...we have more than a 20% share of all exchange-traded product assets in crypto on our custody platform. We are working on launch of spot crypto trading for retail clients.",ex2:"...our crypto launch is different. We're building the books and records and capabilities so that we can custody the assets ourselves — long-term view to participate in blockchain and tokenization.",research:"Schwab Crypto launched April 16, 2026 — BTC/ETH at 75bps via Charles Schwab Premier Bank SSB. $11.9T client assets. 20% of all spot crypto ETP assets. Spot crypto waitlist opened March 2026."},
+  'Citi':          {quarters:["Q1 2024","Q2 2024","Q3 2024","Q4 2024","Q1 2025","Q2 2025","Q3 2025","Q4 2025"],scores:[0.41,0,0,0,0.21,6.79,6.51,0.96],cust:[0.41,0,0,0,0.21,0.2,0,0.48],infra:[0,0,0,0,0,0.6,1.63,0],fintech:[0,0,0,0,0,1.2,0,0],gen:[0,0,0,0,0,4.79,4.88,0.48],terms:["custody","","","","custody","stablecoin; digital asset; circle; custodian; crypto; tokenized deposit","stablecoin; digital asset; crypto; tokenization; tokenized deposit","digital asset; custody"],peak_q:"Q2 2025",ex1:"...four main areas: reserve management for stablecoins, on and off ramps, issuance of a Citi stablecoin, and most importantly, the tokenized deposit space where we're very active.",ex2:"...we view stablecoin as another option in the digital asset toolkit — more friction than tokenized deposits, but we will stand ready to support our clients' needs.",research:"Crypto custody launch confirmed 2026. CEO Fraser: 'looking at Citi stablecoin issuance' (Jul 2025). BVNK investment alongside Visa. Citi Token Services live for cross-border treasury 24/7. Joint stablecoin exploration with PNC and Wells Fargo via Early Warning Services."},
+  'State Street':  {quarters:["Q1 2024","Q2 2024","Q3 2024","Q4 2024","Q1 2025","Q2 2025","Q3 2025","Q4 2025"],scores:[1.69,0.89,2.24,3.19,0.3,2.99,2.07,2.01],cust:[1.69,0.89,1.12,3.19,0.3,1.36,2.07,0.45],infra:[0,0,0,0,0,1.63,0,0],fintech:[0,0,1.12,0,0,0,0,0],gen:[0,0,0,0,0,0,0,1.56],terms:["custodian; custody","custody","circle; custody","custody","custody","custody; tokenization","custodian; custody","bitcoin; digital asset; custody; crypto"],peak_q:"Q4 2024",ex1:"...we knew we needed to perform better in our core custody and servicing business. Digital asset servicing is a core component of our long-term growth plan.",ex2:"...enhancing capabilities in core custody, Private Markets, and Alpha broadly — that's the digital asset servicing layer we've been building.",research:"Digital Asset Platform launched January 15, 2026 — tokenization infrastructure for MMFs, ETFs, deposits, stablecoins. $51.7T AuC/A. 100% quarter consistency (8/8) — the only bank in our dataset with this pattern. Taurus custody technology partnership."},
+  'JPMorgan':      {quarters:["Q1 2024","Q2 2024","Q3 2024","Q4 2024","Q1 2025","Q2 2025","Q3 2025","Q4 2025"],scores:[0.42,0,0.39,0,0,5.72,0,2.59],cust:[0,0,0,0,0,0.18,0,0],infra:[0,0,0,0,0,1.66,0,0.74],fintech:[0.42,0,0.39,0,0,2.03,0,0.74],gen:[0,0,0,0,0,1.85,0,1.11],terms:["strategic investment","","fintech","","","stablecoin; fintech; circle; deposit token; tokenized deposit; custody","","stablecoin; fintech; blockchain; coinbase; kinexys; crypto"],peak_q:"Q2 2025",ex1:"...Kinexys processes $5B daily. We have JPMD — first bank-issued USD deposit token on Base public blockchain — for 24/7 settlement.",ex2:"...Kinexys has processed over $1.5 trillion since 2020. The rebrand from Onyx signals moving from experimentation to operating global infrastructure.",research:"JPMD live on Base and Canton Network (Jan 2026 phased rollout). Kinexys: $5B/day, $1.5T+ cumulative. Tokenized MMF on Ethereum Dec 2025. DTCC selected Canton for tokenized US Treasuries. Exploring BTC/ETH as collateral."},
+  'US Bancorp':    {quarters:["Q1 2024","Q2 2024","Q3 2024","Q4 2024","Q1 2025","Q2 2025","Q3 2025","Q4 2025"],scores:[0,0.7,0,0.25,0,1.14,4.25,4.53],cust:[0,0,0,0,0,0,1.18,1.43],infra:[0,0,0,0,0,0,0,0.24],fintech:[0,0.7,0,0.25,0,0,0.71,0],gen:[0,0,0,0,0,1.14,2.36,2.86],terms:["","circle","","fintech","","stablecoin","stablecoin; safekeeping; circle; cryptocurrency; custody","cryptocurrency; stablecoin; digital asset; cryptocurrency custody; tokenization; custody"],peak_q:"Q4 2025",ex1:"...progress in two distinct areas: capital markets custody where we have $12 trillion in assets and have stood up cryptocurrency custody with NYDIG as sub-custodian.",ex2:"...we stood up Digital Assets and Money Movement division, led by a seasoned payments executive. Stablecoin work in two tracks: capital markets and payments.",research:"Digital Assets and Money Movement division formed Q4 2025. $12T AuC. Live Bitcoin custody with NYDIG. Stablecoin work in capital markets (custody demand) and payments (always-on rails). Administers Hashdex Nasdaq Crypto Index ETF."},
+  'American Express':{quarters:["Q1 2024","Q2 2024","Q3 2024","Q4 2024","Q1 2025","Q2 2025","Q3 2025","Q4 2025"],scores:[0,0,0,0.31,0,7.42,0.36,0.97],cust:[0,0,0,0,0,0,0,0],infra:[0,0,0,0,0,0.3,0,0],fintech:[0,0,0,0.31,0,3.56,0.36,0.97],gen:[0,0,0,0,0,3.56,0,0],terms:["","","","fintech","","stablecoin; bitcoin; blockchain; ethereum; coinbase; digital currency","fintech","circle"],peak_q:"Q2 2025",ex1:"...there's a role for stablecoins in payment systems. The Coinbase partnership enables stablecoin off-ramp and cross-border utility for small businesses.",ex2:"...CEO Squeri post-GENIUS Act: stablecoins are a viable substitute for Swift/ACH — not a big revenue driver yet, but an opportunity we are seriously looking at.",research:"Coinbase One Card live October 2025 — up to 4% BTC cashback on AmEx network. CEO confirmed stablecoin exploration for cross-border payments post-GENIUS Act. Partnership strategy rather than proprietary platform build."},
+  'Bank of America':{quarters:["Q1 2024","Q2 2024","Q3 2024","Q4 2024","Q1 2025","Q2 2025","Q3 2025","Q4 2025"],scores:[0,0,0,0,0,3.51,0,2.17],cust:[0,0,0,0,0,0,0,0],infra:[0,0,0,0,0,1.76,0,0],fintech:[0,0,0,0,0,0.75,0,0],gen:[0,0,0,0,0,1,0,2.17],terms:["","","","","","stablecoin; bitcoin; blockchain; circle; tokenized deposit","","stablecoin"],peak_q:"Q2 2025",ex1:"...we had to make sure we had legal clarity before going customer-facing. The business cases for incremental value are still to be proven. We have lots of blockchain patents.",ex2:"...CEO Moynihan July 2025: we will issue a stablecoin if Congress legalizes it. We are ready.",research:"CEO Moynihan: stablecoin launch confirmed July 2025 post-GENIUS. As of January 2026, 15,000+ Merrill and Private Bank advisors authorised to recommend Bitcoin ETFs (1–4% allocation). BofA research Dec 2025: 'US banks heading for an onchain future.' Participant in G7 stablecoin coalition."},
+  'PNC':           {quarters:["Q1 2024","Q2 2024","Q3 2024","Q4 2024","Q1 2025","Q2 2025","Q3 2025","Q4 2025"],scores:[0,0,0,0,1.77,5.87,0,2.03],cust:[0,0,0,0,0,0,0,0],infra:[0,0,0,0,0,0.28,0,0],fintech:[0,0,0,0,1.42,0.28,0,0.87],gen:[0,0,0,0,0.35,5.31,0,1.16],terms:["","","","","fintech; circle; crypto","crypto; stablecoin; fintech; blockchain","","coinbase; stablecoin; crypto"],peak_q:"Q2 2025",ex1:"...revenue opportunities beyond day-to-day client serving are likely in our payment business and treasury management. We're going to empower clients who want to use crypto.",ex2:"...we've dabbled in direct Bitcoin trading for private banking clients. Stablecoin discussion is everywhere in D.C.",research:"Direct Bitcoin trading launched December 2025 via Coinbase — first top-10 US lender. Joint stablecoin initiative with Citi and Wells Fargo via Early Warning Services (Zelle). NOTE: PNC's NLP peak is 90% General terms — reactive disclosure, not operational."},
+  'Morgan Stanley':{quarters:["Q1 2024","Q2 2024","Q3 2024","Q4 2024","Q1 2025","Q2 2025","Q3 2025","Q4 2025"],scores:[0,0.58,0,0,0,1.96,0.43,0.98],cust:[0,0,0,0,0,0,0,0],infra:[0,0,0,0,0,0.33,0,0],fintech:[0,0.58,0,0,0,0,0,0],gen:[0,0,0,0,0,1.63,0.43,0.98],terms:["","joint venture","","","","stablecoin; crypto; tokenization","digital asset","digital asset; crypto"],peak_q:"Q2 2025",ex1:"...I have a question on stablecoins and tokenization — stablecoin legislation is moving forward, how is Morgan Stanley thinking about this?",ex2:"",research:"First major WM firm to allow advisors to recommend Bitcoin ETFs (August 2024). E*Trade spot BTC/ETH trading planned H1 2026 via Zerohash. Research recommends max 4% crypto allocation at 6% annual expected return / 55% volatility."},
+  'Goldman Sachs': {quarters:["Q1 2024","Q2 2024","Q3 2024","Q4 2024","Q1 2025","Q2 2025","Q3 2025","Q4 2025"],scores:[0,0,0,0,0,1.84,0,0.61],cust:[0,0,0,0,0,0,0,0],infra:[0,0,0,0,0,0.26,0,0.61],fintech:[0,0,0,0,0,1.58,0,0],gen:[0,0,0,0,0,0,0,0],terms:["","","","","","circle; tokenization","","tokenization"],peak_q:"Q2 2025",ex1:"...a follow-up on the broader theme of tokenization — we're still waiting for more clarity on that.",ex2:"...coming full circle [IDIOMATIC — this is not a reference to Circle Financial, it is a false positive in our term matching]",research:"KEY UNDERDISCLOSER: Q&A/Full transcript ratio 0.23x — discusses DA 4× more in scripted remarks than Q&A. GS DAP spinning out as industry-owned platform mid-2026 (announced Oct 2025). Tokenized MMF with BNY live July 2025. EIB digital bond (Project Venus). $135M Digital Asset investment. Cash-settled global crypto trading active."},
+  'Capital One':   {quarters:["Q1 2024","Q2 2024","Q3 2024","Q4 2023","Q2 2025","Q3 2025","Q4 2024","Q4 2025"],scores:[0.74,0.28,0,0,0,0.46,0.36,1.07],cust:[0,0,0,0,0,0,0,0],infra:[0,0,0,0,0,0,0,0],fintech:[0.74,0.28,0,0,0,0.46,0.36,1.07],gen:[0,0,0,0,0,0,0,0],terms:["circle","fintech","","","","strategic investment","strategic investment","coinbase; fintech"],peak_q:"Q4 2025",ex1:"...Brex clients include Anthropic, Robinhood, TikTok, Coinbase — building on our fintech-first foundation.",ex2:"",research:"Brex acquisition (fintech-native commercial banking platform used by crypto-adjacent firms). Discover network rail relevant to tokenized payments. Infrastructure-preparation posture rather than product-first. No direct DA products announced."},
+  'Wells Fargo':   {quarters:["Q1 2024","Q2 2024","Q3 2024","Q4 2024","Q1 2025","Q2 2025","Q3 2025","Q4 2025"],scores:[0,0,0,0,0,0,0,0],cust:[0,0,0,0,0,0,0,0],infra:[0,0,0,0,0,0,0,0],fintech:[0,0,0,0,0,0,0,0],gen:[0,0,0,0,0,0,0,0],terms:["","","","","","","circle [FALSE POS]","circle [FALSE POS]"],peak_q:"—",ex1:"FALSE POSITIVE: 'maybe I'll just circle back on that' — this is idiomatic English, not a reference to Circle Financial. Score zeroed in composite model.",ex2:"",research:"WFUSD trademark filed March 11, 2026 (USPTO) — cryptocurrency trading, payment processing, tokenization software. Part of joint stablecoin exploration with PNC and Citi via Early Warning Services/Zelle. No production DA products. D4 score of 9 reflects trajectory signal only."},
+  'Truist':        {quarters:["Q1 2024","Q2 2024","Q3 2024","Q4 2024","Q1 2025","Q2 2025","Q3 2025","Q4 2025"],scores:[0,0,0,0,0,0,0,0],cust:[0,0,0,0,0,0,0,0],infra:[0,0,0,0,0,0,0,0],fintech:[0,0,0,0,0,0,0,0],gen:[0,0,0,0,0,0,0,0],terms:["","","","","","circle [FALSE POS]","",""],peak_q:"—",ex1:"FALSE POSITIVE: 'just wanted to circle back on the investment banking cap' — idiomatic, not Circle Financial. Score zeroed.",ex2:"",research:"Bitcoin ETF access enabled for advisors via BlackRock and Fidelity Feb 2026. No production DA products. Lowest scores in dataset — retained as baseline comparator."},
+  'Bank of Montreal':{quarters:["Q1 2024","Q2 2024","Q3 2024","Q4 2023","Q1 2025","Q2 2025","Q3 2025","Q4 2024"],scores:[0,0,0,0,0,0,0,0],cust:[0,0,0,0,0,0,0,0],infra:[0,0,0,0,0,0,0,0],fintech:[0,0,0,0,0,0,0,0],gen:[0,0,0,0,0,0,0,0],terms:["","circle [FALSE POS]","","circle [FALSE POS]","","","",""],peak_q:"—",ex1:"FALSE POSITIVE: 'if I just bring all of this full circle' — idiomatic, not Circle Financial. Score zeroed.",ex2:"",research:"Named in G7-currency stablecoin coalition (Oct 2025, 9 banks). Appears exploratory with no commitments. No production DA products. Retained as baseline comparator."},
+  'TD Bank':       {quarters:["Q1 2024","Q2 2024","Q3 2024","Q4 2023","Q1 2025","Q2 2025","Q3 2025","Q4 2024"],scores:[0,0,0,0,0,0,0,0],cust:[0,0,0,0,0,0,0,0],infra:[0,0,0,0,0,0,0,0],fintech:[0,0,0,0,0,0,0,0],gen:[0,0,0,0,0,0,0,0],terms:["","strategic investment [FALSE POS]","","","","","",""],peak_q:"—",ex1:"FALSE POSITIVE: 'strategic investment' refers to TD's stake in Charles Schwab — not a digital asset investment. Score zeroed.",ex2:"",research:"Named in G7 stablecoin coalition Oct 2025 but no commitments. TD Bank under AML regulatory scrutiny 2024–2025 limiting DA engagement. Lowest average score (0.06) in dataset. Retained as baseline."},
+};
+
+const CLUSTERS=[
+  {id:'A',color:'#4A90D9',bg:'rgba(74,144,217,0.12)',name:'Custodial Infrastructure Leaders',banks:['BNY Mellon','State Street'],
+   caps:{Custody:10,Payments:5,'Cap Mkts':7,Retail:2,Regulatory:9},
+   desc:'Both banks\' NLP scores are dominated by Custodial sub-category terms. State Street has specificity ratio of 1.000 (100% Custodial) and is the only bank with 8/8 quarter consistency. BNY has the highest external research score (25/25) and a 3.16x proactive disclosure ratio. These are the banks the institutional market goes to for regulated custody infrastructure.',
+   evidence:[
+     {type:'NLP',text:'BNY: 11 unique terms including "digital asset custody", "tokenized deposit", "stablecoin". Peak 9.70 in Q3 2025. Custodial sub-score dominant. State Street: 8/8 quarters non-zero — only bank with perfect consistency. Custodial = 100% of all sub-scores.'},
+     {type:'Gemini',text:'BNY: first US G-SIB to natively custody Bitcoin. State Street: Taurus partnership for custody technology. Both serve as fund administrators for spot crypto ETPs. BNY supports 80%+ of US/Canada/EMEA crypto ETP assets.'},
+     {type:'Web',text:'BNY: $57.8T AuC, RLUSD custody (Jul 2025), BSRXX fund (Nov 2025), BlackRock blockchain platform (Apr 2025). CEO: "future of crypto runs through big banks" (Mar 2026). State Street Digital Asset Platform: Jan 15, 2026 — full tokenization infrastructure for MMFs, ETFs, deposits, stablecoins.'}
+   ],
+   usecases:[{bank:'BNY Mellon',uc:'ETF Custody',status:'Active'},{bank:'BNY Mellon',uc:'SC Reserves',status:'Active'},{bank:'BNY Mellon',uc:'Fund Servicing',status:'Active'},{bank:'BNY Mellon',uc:'Tokenized MMF',status:'Active'},{bank:'BNY Mellon',uc:'Tok Deposit',status:'Pilot'},{bank:'BNY Mellon',uc:'Cross-Border',status:'Planned'},{bank:'State Street',uc:'ETF Custody',status:'Active'},{bank:'State Street',uc:'SC Reserves',status:'Active'},{bank:'State Street',uc:'Fund Servicing',status:'Active'},{bank:'State Street',uc:'Tokenized MMF',status:'Pilot'},{bank:'State Street',uc:'Tok Deposit',status:'Pilot'}]},
+  {id:'B',color:'#3DBE7A',bg:'rgba(61,190,122,0.11)',name:'Wholesale Blockchain Builders',banks:['JPMorgan','Citi','Goldman Sachs'],
+   caps:{Custody:4,Payments:10,'Cap Mkts':9,Retail:2,Regulatory:8},
+   desc:'All three have built or are building proprietary blockchain infrastructure. JPMorgan\'s Infrastructure sub-score leads the dataset. Goldman\'s inclusion is driven by Dimension 4 external research (22/25) compensating for its low NLP score — confirming the value of the multi-dimensional approach. Goldman is the clearest underdisclosure case: Q&A/Full ratio of 0.23x.',
+   evidence:[
+     {type:'NLP',text:'JPMorgan: 9 real unique terms including "kinexys", "deposit token", "tokenized deposit" — most specific Infrastructure vocabulary. Citi: dual Developing peaks Q2+Q3 2025 — sustained engagement. Goldman: low score (1.84) but tokenization terms specific. D3 score of 5.8 reflects underdiscloser status.'},
+     {type:'Gemini',text:'JPM Kinexys ($5B/day). Citi Token Services: live production for cross-border treasury. GS DAP: Euromoney award winner, EIB digital bond (Project Venus). Goldman discusses DA in scripted remarks 4x more than Q&A.'},
+     {type:'Web',text:'JPMorgan: JPMD live on Base+Canton, tokenized MMF on Ethereum Dec 2025. Citi: crypto custody 2026 confirmed, BVNK investment, joint stablecoin with PNC/WFC. Goldman: GS DAP spin-out mid-2026 as industry-owned platform, tokenized MMF with BNY Jul 2025.'}
+   ],
+   usecases:[{bank:'JPMorgan',uc:'Tok Deposit',status:'Active'},{bank:'JPMorgan',uc:'Cross-Border',status:'Active'},{bank:'JPMorgan',uc:'FX Clearing',status:'Active'},{bank:'JPMorgan',uc:'Prog Pay',status:'Active'},{bank:'JPMorgan',uc:'Bond Issuance',status:'Pilot'},{bank:'Citi',uc:'Tok Deposit',status:'Active'},{bank:'Citi',uc:'Cross-Border',status:'Active'},{bank:'Citi',uc:'Prog Pay',status:'Active'},{bank:'Citi',uc:'Crypto Custody',status:'Planned'},{bank:'Goldman Sachs',uc:'Tokenized MMF',status:'Active'},{bank:'Goldman Sachs',uc:'Bond Issuance',status:'Active'},{bank:'Goldman Sachs',uc:'Collateral Mgmt',status:'Active'}]},
+  {id:'C',color:'#B39DFA',bg:'rgba(179,157,250,0.11)',name:'Retail Digital Asset Pioneers',banks:['Charles Schwab','American Express'],
+   caps:{Custody:3,Payments:4,'Cap Mkts':2,Retail:10,Regulatory:5},
+   desc:'Highest proactive disclosure ratios (Schwab 2.70x) and highest absolute NLP scores. Strategy is retail and consumer-facing rather than wholesale infrastructure. Schwab\'s score composition shows both high General (13.83) AND Infrastructure (4.11) in peak quarter — executives discussed both the opportunity and the native custody infrastructure they are building.',
+   evidence:[
+     {type:'NLP',text:'Schwab: peak 19.81 — highest in dataset. 10 unique real terms. Fintech and General dominant with meaningful Infrastructure (custody build-out language). Proactive disclosure ratio 2.70x. AmEx: Fintech sub-score entirely drives engagement (stablecoin/Coinbase vocabulary).'},
+     {type:'Gemini',text:'Schwab: building native custody infrastructure, 20%+ of all spot crypto ETP assets, CEO explicitly framing crypto as long-term platform play. AmEx: Coinbase partnership 2025, stablecoin exploration for cross-border SMB payments.'},
+     {type:'Web',text:'Schwab Crypto launched April 16, 2026 — BTC/ETH at 75bps. VALIDATES 19.81 peak score as predictive (10-month lead). AmEx: Coinbase One Card live Oct 2025 with 4% BTC cashback. CEO Squeri post-GENIUS: stablecoins "an opportunity we are seriously looking at."'}
+   ],
+   usecases:[{bank:'Charles Schwab',uc:'ETF Custody',status:'Active'},{bank:'Charles Schwab',uc:'Spot Crypto',status:'Active'},{bank:'Charles Schwab',uc:'Portfolio Agg',status:'Active'},{bank:'American Express',uc:'Cross-Border',status:'Pilot'},{bank:'American Express',uc:'Crypto Card',status:'Active'}]},
+  {id:'D',color:'#F59C55',bg:'rgba(245,156,85,0.11)',name:'Strategic Movers — GENIUS Act Ready',banks:['US Bancorp','Bank of America','PNC','Morgan Stanley'],
+   caps:{Custody:5,Payments:4,'Cap Mkts':3,Retail:7,Regulatory:7},
+   desc:'A mix of operational progress and strategic signaling. US Bancorp is most advanced: $12T AuC, live Bitcoin custody with NYDIG, Digital Assets division formed. Bank of America is notable for the inverse: low NLP score (3.51) but high trajectory (7/7) — CEO commitment, 15,000+ advisors authorised. PNC launched direct Bitcoin trading Dec 2025. Morgan Stanley first for Bitcoin ETF WM advisory.',
+   evidence:[
+     {type:'NLP',text:'US Bancorp: Custodial sub-score emerges Q3–Q4 2025 — only Strategic Mover with meaningful Custodial signal. PNC: 90% General terms in peak quarter — reactive disclosure. BAC: 6 of 8 quarters silent, only active Q2 and Q4 2025. MS: General-only scores, advisory discussion language.'},
+     {type:'Gemini',text:'USB: Digital Assets and Money Movement division, $12T custody, active stablecoin work in capital markets + payments tracks. MS: first major WM for BTC ETF advisory (Aug 2024). PNC and WFC: signalling stablecoin intent through exec comments.'},
+     {type:'Web',text:'PNC: Direct BTC trading launched Dec 2025 via Coinbase. WFC: WFUSD trademark March 2026. USB: revived BTC custody with NYDIG, administers crypto ETFs. MS: E*Trade spot trading planned H1 2026. PNC+Citi+WFC: joint stablecoin via Early Warning Services/Zelle.'}
+   ],
+   usecases:[{bank:'US Bancorp',uc:'Crypto Custody',status:'Active'},{bank:'US Bancorp',uc:'SC Reserves',status:'Planned'},{bank:'US Bancorp',uc:'Tok Deposit',status:'Pilot'},{bank:'Bank of America',uc:'Stablecoin',status:'Planned'},{bank:'Bank of America',uc:'ETF Advisory',status:'Active'},{bank:'PNC',uc:'Spot Crypto',status:'Active'},{bank:'Morgan Stanley',uc:'ETF Advisory',status:'Active'},{bank:'Morgan Stanley',uc:'Spot Crypto',status:'Planned'}]},
+  {id:'E',color:'#8EA3B8',bg:'rgba(142,163,184,0.10)',name:'Monitoring / False Positives',banks:['Capital One','Wells Fargo','Truist','Bank of Montreal','TD Bank'],
+   caps:{Custody:1,Payments:2,'Cap Mkts':1,Retail:3,Regulatory:4},
+   desc:'Near-zero or zero adjusted NLP scores. Capital One is most advanced — Brex acquisition provides fintech-ecosystem exposure. Wells Fargo, Truist, BMO, and TD Bank all had NLP scores driven entirely by false positive terms. They are retained as baseline comparators confirming what disengagement looks like.',
+   evidence:[
+     {type:'NLP',text:'BMO: all "circle" hits are idiomatic ("full circle"). TD Bank: "strategic investment" refers to Schwab stake. Truist: "circle back" phrase. WFC: "circle back on that" phrase. All four have adjusted NLP score of zero. Capital One: 2 real terms (fintech, coinbase) but scores driven by false-positive-adjacent vocabulary.'},
+     {type:'Gemini',text:'No confirmed production DA products for any of the five. Capital One: Brex acquisition gives fintech ecosystem exposure. Truist: Bitcoin ETF access via BlackRock/Fidelity. TD Bank and BMO: Canadian banks with limited direct US regulatory exposure.'},
+     {type:'Web',text:'WFC: WFUSD trademark Mar 2026 — only concrete DA signal; D4 trajectory score of 9. BMO and TD: named in nine-bank G7 stablecoin coalition Oct 2025 — appears exploratory. Truist: Bitcoin ETF advisory confirmed Feb 2026. Capital One: Discover acquisition gives payment rail infrastructure relevant to tokenized payments.'}
+   ],
+   usecases:[{bank:'Wells Fargo',uc:'Stablecoin Prep',status:'Planned'},{bank:'Truist',uc:'ETF Advisory',status:'Active'},{bank:'Capital One',uc:'Fintech Rails',status:'Planned'}]},
+];
+
+const TL=[
+  {d:'2020-01',e:'JPM Coin Launch',b:'JPMorgan Chase',cat:'Infrastructure',color:'#3DBE7A',s:'First major bank blockchain payment system — rebranded Kinexys, $5B/day by 2026'},
+  {d:'2022-03',e:'SAB 121 Issued',b:'SEC',cat:'Regulatory',color:'#E05252',s:'Banks required to book client digital assets as own liabilities — made custody uneconomic'},
+  {d:'2022-10',e:'BNY Mellon Crypto Custody Live',b:'BNY Mellon',cat:'Custody',color:'#4A90D9',s:'First US G-SIB to offer regulated crypto custody after securing SEC variance on SAB 121'},
+  {d:'2023-07',e:'GS DAP Wins Euromoney Award',b:'Goldman Sachs',cat:'Capital Markets',color:'#3DBE7A',s:'Financial Innovation of the Year — end-to-end digital bond lifecycle on private ledger'},
+  {d:'2024-08',e:'Morgan Stanley Bitcoin ETF Advisory',b:'Morgan Stanley',cat:'Retail',color:'#F59C55',s:'First major wealth manager allowing advisors to proactively recommend Bitcoin ETFs'},
+  {d:'2024-10',e:'Citi Token Services Live',b:'Citigroup',cat:'Infrastructure',color:'#3DBE7A',s:'Production tokenized deposits for corporate treasury 24/7 cross-border payments'},
+  {d:'2024-12',e:'SAB 121 Rescinded → SAB 122',b:'SEC',cat:'Regulatory',color:'#E05252',s:'Removed balance sheet requirement — major unlock for bank crypto custody economics'},
+  {d:'2025-06',e:'GENIUS Act Senate Passage',b:'US Senate',cat:'Regulatory',color:'#E05252',s:'Senate passes 68–30 — generates wave of analyst stablecoin questions in Q2 2025 earnings'},
+  {d:'2025-07',e:'GENIUS Act Signed into Law',b:'US Congress',cat:'Regulatory',color:'#E05252',s:'First federal stablecoin legislation signed July 18. Root cause of Q2 2025 NLP inflection across 9 banks.'},
+  {d:'2025-07',e:'BNY Custody of Ripple RLUSD',b:'BNY Mellon',cat:'Custody',color:'#4A90D9',s:'Primary custody of Ripple USD stablecoin reserves — confirms BNY as dominant stablecoin infrastructure'},
+  {d:'2025-07',e:'GS-BNY Tokenized MMF Live',b:'Goldman Sachs + BNY',cat:'Capital Markets',color:'#3DBE7A',s:'First US tokenized MMF — BlackRock, Federated Hermes, Fidelity, GSAM all participating'},
+  {d:'2025-10',e:'Citi 2026 Crypto Custody Confirmed',b:'Citi',cat:'Custody',color:'#4A90D9',s:'CNBC: Citi confirms custody launch coming quarters, 2–3 years in development, targeting asset managers'},
+  {d:'2025-10',e:'GS DAP Spin-Out Announced',b:'Goldman Sachs',cat:'Capital Markets',color:'#3DBE7A',s:'GS DAP to become industry-owned distributed platform mid-2026, Tradeweb partnership'},
+  {d:'2025-10',e:'US Bancorp Digital Assets Division',b:'US Bancorp',cat:'Infrastructure',color:'#F59C55',s:'Dedicated division — $12T AuC, live Bitcoin custody with NYDIG, stablecoin in two tracks'},
+  {d:'2025-11',e:'BNY Dreyfus Stablecoin Reserves Fund',b:'BNY Mellon',cat:'Custody',color:'#4A90D9',s:'BSRXX — money market fund to hold reserves for GENIUS Act-compliant stablecoin issuers'},
+  {d:'2025-12',e:'PNC Direct Bitcoin Trading',b:'PNC',cat:'Retail',color:'#F59C55',s:'First top-10 US lender with direct Bitcoin trading for private banking clients via Coinbase'},
+  {d:'2026-01',e:'State Street Digital Asset Platform',b:'State Street',cat:'Custody',color:'#4A90D9',s:'Full tokenization infrastructure — MMFs, ETFs, deposits, stablecoins across private+public blockchains'},
+  {d:'2026-01',e:'JPMorgan JPMD on Canton Network',b:'JPMorgan',cat:'Infrastructure',color:'#3DBE7A',s:'JPMD deposit token to issue natively on Canton — phased rollout throughout 2026'},
+  {d:'2026-01',e:'BofA Merrill Advisors Bitcoin ETF',b:'Bank of America',cat:'Retail',color:'#F59C55',s:'15,000+ Merrill and Private Bank advisors authorised to recommend Bitcoin ETFs (1–4% allocation)'},
+  {d:'2026-03',e:'Wells Fargo WFUSD Trademark',b:'Wells Fargo',cat:'Infrastructure',color:'#F59C55',s:'USPTO filing covers crypto trading, payments, tokenization — USD suffix implies stablecoin/deposit token'},
+  {d:'2026-04',e:'Schwab Crypto Launched',b:'Charles Schwab',cat:'Retail',color:'#B39DFA',s:'VALIDATES MODEL: "Schwab Crypto" live April 16, 2026 — BTC/ETH at 75bps. 10-month lead from Q2 2025 peak NLP.'},
+];
+
+const DEVELOPMENTS=[
+  {d:'Apr 16 2026',bank:'Charles Schwab',color:'#B39DFA',txt:'<strong>Schwab Crypto launched</strong> — direct BTC/ETH at 75bps via Charles Schwab Premier Bank SSB. Unified with stocks and bonds on Schwab.com, Mobile, thinkorswim. Validates our Q2 2025 NLP peak of 19.81 as a predictive signal.'},
+  {d:'Mar 11 2026',bank:'Wells Fargo',color:'#F59C55',txt:'<strong>WFUSD trademark filed</strong> with USPTO — cryptocurrency trading, exchange services, payment processing, digital asset transfers, staking, tokenization software. Signals stablecoin/deposit token preparation.'},
+  {d:'Jan 15 2026',bank:'State Street',color:'#4A90D9',txt:'<strong>Digital Asset Platform launched</strong> — full tokenization infrastructure: MMFs, ETFs, deposits, stablecoins across private and public permissioned blockchains. $51.7T AuC/A.'},
+  {d:'Jan 7 2026',bank:'JPMorgan',color:'#3DBE7A',txt:'<strong>JPMD to issue natively on Canton Network</strong> — phased rollout 2026. Also launched tokenized money market fund on Ethereum Dec 2025. DTCC selected Canton for tokenized US Treasuries.'},
+  {d:'Jan 5 2026',bank:'Bank of America',color:'#3DBE7A',txt:'<strong>15,000+ Merrill and Private Bank advisors</strong> authorised to recommend Bitcoin ETFs (1–4% allocation via BlackRock, Fidelity, Bitwise, Grayscale).'},
+  {d:'Nov 2025',bank:'BNY Mellon',color:'#4A90D9',txt:'<strong>BNY Dreyfus Stablecoin Reserves Fund (BSRXX) launched</strong> — MMF designed to hold reserves for GENIUS Act-compliant stablecoin issuers. Positions BNY as reserve infrastructure backbone for bank stablecoin ecosystem.'},
+  {d:'Oct 2025',bank:'Citi',color:'#3DBE7A',txt:'<strong>Crypto custody launch confirmed for 2026</strong> (CNBC). 2–3 years in development. Also investing in BVNK (stablecoin infrastructure startup) alongside Visa. Exploring joint stablecoin with PNC and Wells Fargo.'},
+  {d:'Oct 2025',bank:'Goldman Sachs',color:'#3DBE7A',txt:'<strong>GS DAP spin-out announced</strong> — platform to become industry-owned distributed solution mid-2026, partnering with Tradeweb. Builds on July 2025 tokenized MMF launch with BNY.'},
+  {d:'Oct 2025',bank:'PNC + Citi + Wells Fargo',color:'#F59C55',txt:'<strong>Joint stablecoin initiative via Early Warning Services (Zelle)</strong> — three banks from three different clusters exploring shared stablecoin infrastructure. Cross-cluster development our individual NLP scores could not predict.'},
+  {d:'Dec 2025',bank:'PNC',color:'#F59C55',txt:'<strong>Direct Bitcoin trading launched</strong> for private banking clients via Coinbase — first top-10 US lender to do so.'},
+  {d:'Jul 18 2025',bank:'US Congress',color:'#E05252',txt:'<strong>GENIUS Act signed into law</strong> — Senate 68-30, House 308-122. First federal stablecoin legislation. Root cause of Q2 2025 NLP inflection across 9 of 16 banks.'},
+];
+
+// ── HELPERS ───────────────────────────────────────────────
+function tierColor(t){return{1:'#3DBE7A',2:'#4A90D9',3:'#B39DFA',4:'#F59C55',5:'#E05252'}[parseInt(t)]||'#565350';}
+function tierBg(t){return{1:'rgba(61,190,122,0.15)',2:'rgba(74,144,217,0.15)',3:'rgba(179,157,250,0.15)',4:'rgba(245,156,85,0.15)',5:'rgba(224,82,82,0.15)'}[parseInt(t)]||'rgba(86,83,80,0.15)';}
+function clColor(c){return{A:'#4A90D9',B:'#3DBE7A',C:'#B39DFA',D:'#F59C55',E:'#8EA3B8'}[c]||'#565350';}
+function compColor(v){return v>=75?'#3DBE7A':v>=55?'#4A90D9':v>=35?'#B39DFA':v>=15?'#F59C55':'#E05252';}
+function sBg(s){return{Active:'rgba(61,190,122,0.22)',Pilot:'rgba(212,160,23,0.22)',Planned:'rgba(179,157,250,0.22)'}[s]||'transparent';}
+function sTx(s){return{Active:'#3DBE7A',Pilot:'#D4A017',Planned:'#B39DFA'}[s]||'var(--faint)';}
+
+// ── NAV ───────────────────────────────────────────────────
+const PNLS=['overview','method','updates','lb','profile','compare','cluster','timeline','market'];
+function go(id){
+  PNLS.forEach(p=>document.getElementById('pnl-'+p).classList.toggle('on',p===id));
+  document.querySelectorAll('.ni').forEach(n=>n.classList.toggle('on',n.getAttribute('onclick')===`go('${id}')`));
+  if(id==='overview') renderOverview();
+  if(id==='updates') renderUpdates();
+  if(id==='lb') renderLB();
+  if(id==='profile') renderProfile();
+  if(id==='compare') renderCompare();
+  if(id==='cluster') renderCluster();
+  if(id==='timeline') renderTimeline();
+  if(id==='market') renderMarket();
+}
+
+// ── OVERVIEW ──────────────────────────────────────────────
+let ovC;
+function renderOverview(){
+  document.getElementById('ov-findings').innerHTML=[
+    'Two banks reached <strong>Tier 1 (Leader, composite ≥80)</strong>: BNY Mellon (85.4) and Charles Schwab (83.0)',
+    '<strong>Schwab Crypto launched April 16, 2026</strong> — 10 months after our model assigned the highest NLP score in the dataset (19.81, Q2 2025). Predictive validity confirmed.',
+    '<strong>Q2 2025 inflection explained</strong>: GENIUS Act Senate passage (June 17, 2025, 68–30) drove 9 of 16 banks to their NLP peak that quarter via analyst stablecoin questions.',
+    '<strong>Goldman Sachs paradox resolved</strong>: Q&A NLP peak = 1.84 (ranks 11th). Composite = 39.9 (Tier 3). External research score of 22/25 corrects for systematic Q&A underdisclosure — GS DAP spin-out, tokenized MMF live, EIB digital bond.',
+    '<strong>4 confirmed false positives</strong>: Wells Fargo, Truist, Bank of Montreal, TD Bank — NLP scores driven entirely by idiomatic "circle back" language. Zeroed in composite model.',
+    'State Street is the only bank with <strong>8/8 quarter consistency</strong> (100% specificity ratio = all Custodial terms) — confirming it is operationally live, not aspirational.',
+  ].map(f=>`<div style="display:flex;gap:8px;padding:5px 0;border-bottom:0.5px solid var(--rule)"><span style="color:var(--gold);flex-shrink:0;font-family:'Space Mono',monospace;font-size:10px;margin-top:1px">→</span><span style="font-size:11px;color:var(--muted);line-height:1.5">${f}</span></div>`).join('');
+  if(ovC) ovC.destroy();
+  const byTier=[[1,'#3DBE7A'],[2,'#4A90D9'],[3,'#B39DFA'],[4,'#F59C55'],[5,'#E05252']];
+  ovC=new Chart(document.getElementById('ovChart'),{type:'bar',data:{labels:['Tier 1','Tier 2','Tier 3','Tier 4','Tier 5'],datasets:[{data:[2,4,5,1,4],backgroundColor:byTier.map(t=>t[1]+'77'),borderColor:byTier.map(t=>t[1]),borderWidth:1.5,borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:9},color:'#9A9793'},grid:{display:false}},y:{ticks:{font:{size:9},color:'#9A9793',stepSize:1},grid:{color:'rgba(255,255,255,0.04)'}}}}});
+}
+
+// ── UPDATES ───────────────────────────────────────────────
+function renderUpdates(){
+  document.getElementById('dev-list').innerHTML=DEVELOPMENTS.map(d=>`<div style="display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:0.5px solid var(--rule)"><div style="font-family:'Space Mono',monospace;font-size:9px;color:var(--faint);width:64px;flex-shrink:0;padding-top:2px">${d.d}</div><span style="font-size:9px;font-family:'Space Mono',monospace;padding:2px 7px;border-radius:3px;background:${d.color}22;color:${d.color};white-space:nowrap;flex-shrink:0;margin-top:1px">${d.bank}</span><div style="font-size:11px;color:var(--muted);line-height:1.55">${d.txt}</div></div>`).join('');
+}
+
+// ── LEADERBOARD ───────────────────────────────────────────
+let lbFilter='all';
+function filtLb(f,el){lbFilter=f;document.querySelectorAll('#lb-filters .fp').forEach(p=>p.classList.remove('on'));el.classList.add('on');renderLB();}
+function renderLB(){
+  const sorted=Object.entries(SCORES).sort((a,b)=>b[1].comp-a[1].comp);
+  const filtered=lbFilter==='all'?sorted:sorted.filter(([,s])=>s.tier===lbFilter);
+  document.getElementById('lb-meta').textContent=filtered.length+' of 16 banks';
+  const cols='20px 44px 1fr 62px 62px 56px 56px 56px 56px 64px';
+  document.getElementById('lb-body').innerHTML=
+    `<div class="trow hdr" style="grid-template-columns:${cols}"><span class="hd">#</span><span class="hd">Ticker</span><span class="hd">Institution</span><span class="hd r">Composite</span><span class="hd r">NLP Peak</span><span class="hd r">D1</span><span class="hd r">D2</span><span class="hd r">D3</span><span class="hd r">D4</span><span class="hd">Tier</span></div>`
+    +filtered.map(([name,s],i)=>{
+      const tc=tierColor(parseInt(s.tier)),tb=tierBg(parseInt(s.tier)),cc=clColor(s.cluster);
+      const fp=s.fp?`<span style="font-size:8px;color:#E05252;font-family:'Space Mono',monospace;margin-left:4px">FP</span>`:'';
+      return`<div class="trow" style="grid-template-columns:${cols}" onclick="openBank('${name}')">
+        <span style="font-size:10px;color:var(--faint);font-family:'Space Mono',monospace;text-align:center">${i+1}</span>
+        <span style="font-size:10px;font-family:'Space Mono',monospace;font-weight:700;color:var(--gold)">${s.ticker}</span>
+        <span style="font-size:12px">${name}${fp} <span style="font-size:8px;color:${cc};background:${cc}22;padding:1px 5px;border-radius:3px;margin-left:3px;font-family:'Space Mono',monospace">Cl.${s.cluster}</span></span>
+        <span style="font-size:13px;font-family:'Space Mono',monospace;font-weight:700;text-align:right;color:${compColor(s.comp)}">${s.comp.toFixed(1)}</span>
+        <span style="font-size:11px;font-family:'Space Mono',monospace;text-align:right;color:var(--muted)">${s.nlp_peak.toFixed(2)}</span>
+        <span style="font-size:10px;font-family:'Space Mono',monospace;text-align:right;color:#4A90D9">${s.d1.toFixed(1)}</span>
+        <span style="font-size:10px;font-family:'Space Mono',monospace;text-align:right;color:#3DBE7A">${s.d2.toFixed(1)}</span>
+        <span style="font-size:10px;font-family:'Space Mono',monospace;text-align:right;color:#B39DFA">${s.d3.toFixed(1)}</span>
+        <span style="font-size:10px;font-family:'Space Mono',monospace;text-align:right;color:#F59C55">${s.d4}</span>
+        <span><span class="badge" style="background:${tb};color:${tc};font-size:8.5px">${s.tier}</span></span>
+      </div>`;
+    }).join('');
+}
+function openBank(n){document.getElementById('bank-sel').value=n;go('profile');}
+
+// ── PROFILE ───────────────────────────────────────────────
+let tlC,bkC;
+function renderProfile(){
+  const sel=document.getElementById('bank-sel');
+  if(!sel.options.length) Object.keys(SCORES).forEach(b=>{const o=document.createElement('option');o.value=b;o.textContent=`${SCORES[b].ticker} — ${b}`;sel.appendChild(o);});
+  const name=sel.value||Object.keys(SCORES)[0];
+  const s=SCORES[name],q=QNA[name];if(!s||!q) return;
+  const cl=CLUSTERS.find(c=>c.id===s.cluster);
+  const tc=tierColor(parseInt(s.tier));
+  document.getElementById('prof-ring').style.borderColor=compColor(s.comp);
+  document.getElementById('ring-val').textContent=s.comp.toFixed(0);
+  document.getElementById('ring-val').style.color=compColor(s.comp);
+  document.getElementById('prof-stats').innerHTML=[
+    {l:'Ticker',v:s.ticker,g:true},{l:'Tier',v:s.tier},{l:'Cluster',v:'Cluster '+s.cluster},
+    {l:'NLP Peak',v:s.nlp_peak.toFixed(2)},{l:'Adj Avg',v:s.adj_avg.toFixed(2)},
+    {l:'Real Terms',v:s.real_terms},{l:'Consistency',v:Math.round(s.consistency*8)+'/8 qtrs'},
+    {l:'Disclosure',v:s.disclosure.toFixed(2)+'x'},
+  ].map(x=>`<div class="kcard"><div class="kcard-l">${x.l}</div><div class="kcard-v ${x.g?'gold':''}" style="font-size:14px">${x.v}</div></div>`).join('');
+  document.getElementById('prof-explain').innerHTML=`<strong>${name}</strong> is in <strong>Cluster ${s.cluster} — ${cl?.name}</strong> with a composite score of <strong>${s.comp.toFixed(1)}/100 (${s.tier})</strong>. ${s.fp?'<strong style="color:#E05252">NOTE: This bank is a confirmed false positive.</strong> Its original NLP score was driven entirely by idiomatic language, not genuine DA engagement. Composite NLP score is zero; the D4 external research score reflects only trajectory signals.':''} ${!s.fp&&s.disclosure<0.5?`<strong style="color:#F59C55">Underdiscloser alert:</strong> Q&A/Full transcript ratio is ${s.disclosure.toFixed(2)}x — this bank discusses digital assets significantly more in prepared remarks than investor Q&A. External research score (D4=${s.d4}) compensates for this systematic bias.`:''} ${!s.fp?`Specificity ratio: ${(s.specificity*100).toFixed(0)}% of NLP score from Custodial+Infrastructure terms. ${s.specificity>0.5?'High specificity — executives are describing specific products, not broad concepts.':s.specificity>0.15?'Moderate specificity — mix of product-specific and broad language.':'Low specificity — primarily broad narrative engagement ("crypto," "stablecoin") without specific product language.'}`:''} ${q.research?`<br><br><strong>April 2026 research:</strong> ${q.research}`:''}`;
+  document.getElementById('prof-dims').innerHTML=[
+    {label:'D1 · NLP Engagement',val:s.d1,max:25,color:'#4A90D9',note:`Adjusted NLP peak ${s.nlp_peak.toFixed(2)} → log-normalised to ${s.d1.toFixed(1)}/25. False positives removed.`},
+    {label:'D2 · Specificity & Depth',val:s.d2,max:25,color:'#3DBE7A',note:`${s.real_terms} unique real terms + ${(s.specificity*100).toFixed(0)}% specificity + ${Math.round(s.consistency*8)}/8 quarter consistency.`},
+    {label:'D3 · Disclosure Mode',val:s.d3,max:25,color:'#B39DFA',note:`Q&A/Full transcript ratio: ${s.disclosure.toFixed(2)}x. ${s.disclosure>=2?'Proactive discloser — discusses DA more in Q&A than prepared remarks.':s.disclosure<0.5?'Underdiscloser — prepared remarks contain more DA content than Q&A.':'Neutral disclosure pattern.'}`},
+    {label:'D4 · External Research',val:s.d4,max:25,color:'#F59C55',note:`Products launched + infrastructure depth + strategic trajectory. Explicitly analyst-judged and labeled as such.`},
+  ].map(d=>`<div class="dim-bar-row"><div class="dim-label">${d.label}</div><div class="dim-track"><div class="dim-fill" style="width:${d.val/d.max*100}%;background:${d.color}"></div></div><div class="dim-val" style="color:${d.color}">${d.val.toFixed(1)}</div></div><div style="font-size:9.5px;color:var(--faint);margin-bottom:8px;margin-left:88px">${d.note}</div>`).join('');
+  if(tlC) tlC.destroy();
+  tlC=new Chart(document.getElementById('tlChart'),{type:'line',data:{labels:q.quarters,datasets:[{data:q.scores,borderColor:'#D4A017',backgroundColor:'rgba(212,160,23,0.04)',fill:true,tension:0.3,pointRadius:q.scores.map(v=>v>0?5:3),pointBackgroundColor:q.scores.map(v=>v>5?'#3DBE7A':v>0?'#D4A017':'rgba(255,255,255,0.08)'),borderWidth:1.5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:8,family:'Space Mono'},color:'#565350'},grid:{color:'rgba(255,255,255,0.03)'}},y:{min:0,ticks:{font:{size:8},color:'#565350'},grid:{color:'rgba(255,255,255,0.04)'}}}}});
+  const pi=q.scores.indexOf(Math.max(...q.scores));
+  if(bkC) bkC.destroy();
+  bkC=new Chart(document.getElementById('bkChart'),{type:'bar',data:{labels:['Custodial','Infrastructure','Fintech','General'],datasets:[{data:[q.cust[pi],q.infra[pi],q.fintech[pi],q.gen[pi]],backgroundColor:['rgba(74,144,217,0.45)','rgba(61,190,122,0.45)','rgba(179,157,250,0.45)','rgba(212,160,23,0.45)'],borderColor:['#4A90D9','#3DBE7A','#B39DFA','#D4A017'],borderWidth:1.5,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>{const d=['custody/safekeeping/MPC language','blockchain platform/tokenized deposit/kinexys','stablecoin/DeFi/cross-border/fintech','crypto/bitcoin/digital asset broad'];return d[c.dataIndex]+': '+c.parsed.y.toFixed(2);}}}},scales:{x:{ticks:{font:{size:8,family:'Space Mono'},color:'#565350'},grid:{display:false}},y:{ticks:{font:{size:8},color:'#565350'},grid:{color:'rgba(255,255,255,0.04)'}}}}});
+  document.getElementById('ev-list').innerHTML=[q.ex1,q.ex2].filter(e=>e).map((e,i)=>`<div class="sec" style="margin-bottom:8px;padding:10px"><div class="ev-meta" style="display:flex;gap:5px;margin-bottom:4px"><span class="badge" style="background:rgba(212,160,23,0.12);color:#D4A017">${q.peak_q||'Peak Qtr'}</span><span class="badge" style="background:rgba(74,144,217,0.12);color:#4A90D9">Excerpt ${i+1}</span></div><div style="font-size:10.5px;color:var(--muted);line-height:1.5">${e}</div></div>`).join('')||'<div style="font-size:11px;color:var(--faint)">No real excerpts — this bank is a confirmed false positive.</div>';
+  document.getElementById('terms-list').innerHTML=q.quarters.map((qtr,i)=>q.terms[i]&&!q.terms[i].includes('FALSE')?`<div style="display:flex;gap:8px;padding:5px 0;border-bottom:0.5px solid var(--rule)"><span style="font-family:'Space Mono',monospace;font-size:9px;color:var(--faint);width:56px;flex-shrink:0">${qtr}</span><span style="font-size:10.5px;color:var(--muted)">${q.terms[i]}</span></div>`:q.terms[i]&&q.terms[i].includes('FALSE')?`<div style="display:flex;gap:8px;padding:5px 0;border-bottom:0.5px solid var(--rule)"><span style="font-family:'Space Mono',monospace;font-size:9px;color:var(--faint);width:56px;flex-shrink:0">${qtr}</span><span style="font-size:10.5px;color:#E05252">${q.terms[i]}</span></div>`:``).filter(Boolean).join('')||`<span style="font-size:11px;color:var(--faint)">No real terms detected.</span>`;
+}
+
+// ── COMPARE ───────────────────────────────────────────────
+let cmpSel=[],cB,cL,cR;
+const CC=['#D4A017','#4A90D9','#3DBE7A','#B39DFA'];
+function renderCompare(){
+  document.getElementById('cmp-chips').innerHTML=Object.keys(SCORES).map(b=>{const on=cmpSel.includes(b),cc=on?clColor(SCORES[b].cluster):'';return`<div class="chip${on?' on':''}" style="${on?`background:${cc};color:#0F0E0C;border-color:${cc}`:''}" onclick="togCmp('${b}')">${SCORES[b].ticker}</div>`;}).join('');
+  document.getElementById('cmp-lim').textContent=cmpSel.length+' / 4 selected'+(cmpSel.length<2?' — pick at least 2 to compare':'');
+  const show=cmpSel.length>=2;
+  document.getElementById('cmp-content').style.display=show?'block':'none';
+  if(show) drawCmp();
+}
+function togCmp(n){if(cmpSel.includes(n)){cmpSel=cmpSel.filter(b=>b!==n);}else{if(cmpSel.length>=4)return;cmpSel.push(n);}renderCompare();}
+function drawCmp(){
+  const banks=cmpSel.map(n=>({name:n,s:SCORES[n],q:QNA[n]}));
+  if(cB)cB.destroy();
+  cB=new Chart(document.getElementById('cmpBar'),{type:'bar',data:{labels:['Composite','NLP Peak'],datasets:banks.map((b,i)=>({label:b.s.ticker,data:[b.s.comp,b.s.nlp_peak],backgroundColor:CC[i]+'44',borderColor:CC[i],borderWidth:1.5,borderRadius:4}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,labels:{font:{size:9,family:'Space Mono'},color:'#9A9793',boxWidth:8}}},scales:{x:{ticks:{font:{size:9}},grid:{display:false}},y:{ticks:{font:{size:9}},grid:{color:'rgba(255,255,255,0.04)'}}}}});
+  if(cL)cL.destroy();
+  cL=new Chart(document.getElementById('cmpLine'),{type:'line',data:{labels:banks[0].q.quarters,datasets:banks.map((b,i)=>({label:b.s.ticker,data:b.q.scores,borderColor:CC[i],backgroundColor:'transparent',tension:0.3,pointRadius:3,borderWidth:1.5}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,labels:{font:{size:9,family:'Space Mono'},color:'#9A9793',boxWidth:8}}},scales:{x:{ticks:{font:{size:8,family:'Space Mono'},color:'#565350'},grid:{display:false}},y:{min:0,ticks:{font:{size:9},color:'#565350'},grid:{color:'rgba(255,255,255,0.04)'}}}}});
+  document.getElementById('cmp-tbl').innerHTML=`<thead><tr><th style="padding:6px 5px;border-bottom:0.5px solid var(--rule);font-size:8px;font-family:'Space Mono',monospace;color:var(--faint);text-transform:uppercase;letter-spacing:.04em;font-weight:400;min-width:110px">Metric</th>${banks.map((b,i)=>`<th style="color:${CC[i]};padding:6px 5px;border-bottom:0.5px solid var(--rule);font-size:10px;font-family:'Space Mono',monospace;font-weight:700;text-align:left">${b.s.ticker}</th>`).join('')}</tr></thead><tbody>${[['Composite (/100)',b=>b.s.comp.toFixed(1)],['Tier',b=>b.s.tier],['Cluster',b=>'Cluster '+b.s.cluster],['D1: NLP',b=>b.s.d1.toFixed(1)+' /25'],['D2: Specificity',b=>b.s.d2.toFixed(1)+' /25'],['D3: Disclosure',b=>b.s.d3.toFixed(1)+' /25'],['D4: External',b=>b.s.d4+' /25'],['NLP Peak (adj)',b=>b.s.nlp_peak.toFixed(2)],['Real Terms',b=>b.s.real_terms],['Specificity %',b=>(b.s.specificity*100).toFixed(0)+'%'],['Disclosure Ratio',b=>b.s.disclosure.toFixed(2)+'x'],['Consistency',b=>Math.round(b.s.consistency*8)+'/8'],['False Positive',b=>b.s.fp?'YES ⚠':'No']].map(([l,fn])=>`<tr>${[`<td style="color:var(--faint);font-family:'Space Mono',monospace;font-size:8.5px;text-transform:uppercase;letter-spacing:.03em;padding:6px 5px;border-bottom:0.5px solid var(--rule)">${l}</td>`,...banks.map(b=>`<td style="font-size:11.5px;padding:6px 5px;border-bottom:0.5px solid var(--rule);color:var(--ink)">${fn(b)}</td>`)].join('')}</tr>`).join('')}</tbody>`;
+  if(cR)cR.destroy();
+  cR=new Chart(document.getElementById('cmpRadar'),{type:'radar',data:{labels:['D1: NLP','D2: Specificity','D3: Disclosure','D4: External'],datasets:banks.map((b,i)=>({label:b.s.ticker,data:[b.s.d1,b.s.d2,b.s.d3,b.s.d4],borderColor:CC[i],backgroundColor:CC[i]+'22',borderWidth:1.5,pointRadius:3}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,labels:{font:{size:9,family:'Space Mono'},color:'#9A9793',boxWidth:8}}},scales:{r:{min:0,max:25,ticks:{display:false,stepSize:5},grid:{color:'rgba(255,255,255,0.07)'},pointLabels:{font:{size:9,family:'Space Mono'},color:'#9A9793'}}}}});
+}
+
+// ── CLUSTER ───────────────────────────────────────────────
+let selCl=null;
+function renderCluster(){
+  document.getElementById('cl-cards').innerHTML=CLUSTERS.map(c=>`<div class="cl-card${selCl===c.id?' sel':''}" onclick="pickCl('${c.id}')" style="border-left:3px solid ${c.color}"><div style="display:flex;align-items:flex-start;justify-content:space-between"><div><div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:${c.color};margin-bottom:3px">Cluster ${c.id} · ${c.name}</div><div style="font-size:10px;color:var(--muted);margin-bottom:7px">${c.banks.join(' · ')}</div></div><span style="font-family:'Syne',sans-serif;font-size:32px;font-weight:700;opacity:0.08;flex-shrink:0">${c.id}</span></div><div style="display:flex;gap:4px;flex-wrap:wrap">${c.banks.map(b=>`<span class="badge" style="background:${c.bg};color:${c.color}">${SCORES[b]?.ticker||b} ${SCORES[b]?.comp.toFixed(0)||''}</span>`).join('')}</div></div>`).join('');
+  if(selCl){
+    const c=CLUSTERS.find(x=>x.id===selCl);
+    const caps=Object.entries(c.caps);
+    const evC={NLP:'#D4A017',Gemini:'#B39DFA',Web:'#3DBE7A'};
+    const evBg={NLP:'rgba(212,160,23,0.12)',Gemini:'rgba(179,157,250,0.12)',Web:'rgba(61,190,122,0.12)'};
+    const ucGroups={};
+    c.usecases.forEach(u=>{if(!ucGroups[u.bank])ucGroups[u.bank]=[];ucGroups[u.bank].push(u);});
+    document.getElementById('cl-detail').innerHTML=`<div class="sec" style="border-left:3px solid ${c.color}">
+      <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:4px">Cluster ${c.id} · ${c.name}</div>
+      <div style="margin-bottom:12px">${caps.map(([k,v])=>`<div class="dim-bar-row" style="margin-bottom:5px"><div class="dim-label" style="width:90px">${k}</div><div class="dim-track"><div class="dim-fill" style="width:${v*10}%;background:${c.color}"></div></div><div class="dim-val" style="color:${c.color}">${v}/10</div></div>`).join('')}</div>
+      <p style="font-size:11px;color:var(--muted);line-height:1.65;margin-bottom:12px">${c.desc}</p>
+      <div class="evidence-section">
+        <div class="ev-type">Three-Layer Evidence</div>
+        ${c.evidence.map(ev=>`<div class="ev-row"><span class="ev-src" style="background:${evBg[ev.type]};color:${evC[ev.type]}">${ev.type}</span><div class="ev-txt">${ev.text}</div></div>`).join('')}
+      </div>
+      <div class="evidence-section" style="margin-top:10px">
+        <div class="ev-type">Use Cases by Bank</div>
+        ${Object.entries(ucGroups).map(([bank,ucs])=>`<div style="margin-bottom:6px"><div style="font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:4px">${SCORES[bank]?.ticker||bank} — ${bank}</div><div style="display:flex;gap:4px;flex-wrap:wrap">${ucs.map(u=>`<span class="badge" style="background:${sBg(u.status)};color:${sTx(u.status)}">${u.uc} · ${u.status}</span>`).join('')}</div></div>`).join('')}
+      </div>
+    </div>`;
+  } else {
+    document.getElementById('cl-detail').innerHTML='';
+  }
+}
+function pickCl(id){selCl=selCl===id?null:id;renderCluster();}
+
+// ── TIMELINE ──────────────────────────────────────────────
+let tlF='all';
+function filtTl(f,el){tlF=f;document.querySelectorAll('#tl-filters .fp').forEach(p=>p.classList.remove('on'));el.classList.add('on');renderTimeline();}
+function renderTimeline(){
+  const items=tlF==='all'?TL:TL.filter(t=>t.cat===tlF);
+  document.getElementById('tl-items').innerHTML=items.map(t=>`<div class="tl-item"><div class="tl-dot" style="background:${t.color}"></div><div class="tl-d">${t.d} · <span style="color:${t.color}">${t.cat}</span></div><div class="tl-e">${t.e}</div><div class="tl-s">${t.b} — ${t.s}</div></div>`).join('');
+}
+
+// ── MARKET ────────────────────────────────────────────────
+let m1,m2;
+function renderMarket(){
+  if(m1)m1.destroy();
+  m1=new Chart(document.getElementById('mkt1'),{type:'bar',data:{labels:['Now (2026)','Base (2030)','Bull (2030)'],datasets:[{data:[237,1900,4000],backgroundColor:['rgba(74,144,217,0.4)','rgba(61,190,122,0.4)','rgba(212,160,23,0.4)'],borderColor:['#4A90D9','#3DBE7A','#D4A017'],borderWidth:1.5,borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:9}},grid:{display:false}},y:{ticks:{font:{size:9},callback:v=>`$${v}B`},grid:{color:'rgba(255,255,255,0.04)'}}}}});
+  // Scatter: composite vs nlp peak
+  const pts=Object.entries(SCORES).map(([n,s])=>({x:s.nlp_peak,y:s.comp,label:s.ticker,cl:s.cluster}));
+  if(m2)m2.destroy();
+  m2=new Chart(document.getElementById('mkt2'),{type:'scatter',data:{datasets:[{label:'Banks',data:pts,backgroundColor:pts.map(p=>clColor(p.cl)+'BB'),pointRadius:7,pointHoverRadius:9}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:d=>`${d.raw.label}: NLP=${d.raw.x.toFixed(1)}, Composite=${d.raw.y.toFixed(0)}`}}},scales:{x:{title:{display:true,text:'NLP Peak Score',font:{size:9},color:'#9A9793'},ticks:{font:{size:8},color:'#565350'},grid:{color:'rgba(255,255,255,0.04)'}},y:{title:{display:true,text:'Composite Score (0–100)',font:{size:9},color:'#9A9793'},min:0,ticks:{font:{size:8},color:'#565350'},grid:{color:'rgba(255,255,255,0.04)'}}}}});
+  document.getElementById('proj-list').innerHTML=[
+    {src:'JPMorgan',v:'$5B/day',l:'Kinexys daily transaction volume (2026)'},
+    {src:'JPMorgan',v:'$1.5T+',l:'Kinexys cumulative processed since 2020'},
+    {src:'Citi GPS',v:'$1.9T–$4T',l:'Stablecoin market size by 2030 (base–bull)'},
+    {src:'Citi GPS',v:'$5T+',l:'Total tokenization market size by 2030'},
+    {src:'BNY Mellon',v:'80%+',l:'Share of US/Canada/EMEA spot crypto ETP fund services'},
+    {src:'River Research',v:'60%',l:'Of top 25 US banks now building Bitcoin products (Feb 2026)'},
+    {src:'SVB',v:'$1.5B+',l:'VC investment in stablecoin companies in 2025'},
+    {src:'State Street',v:'>50%',l:'Majority of institutions expect DA exposure to double by 2028'},
+  ].map(p=>`<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:0.5px solid var(--rule)"><span class="badge" style="background:rgba(212,160,23,0.1);color:#D4A017;min-width:86px;text-align:center">${p.src}</span><span style="font-family:'Space Mono',monospace;font-size:12px;font-weight:700;min-width:72px">${p.v}</span><span style="font-size:11px;color:var(--muted)">${p.l}</span></div>`).join('');
+}
+
+// ── INIT ──────────────────────────────────────────────────
+renderOverview();
+</script>
+</body>
+</html>
