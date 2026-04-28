@@ -1,5 +1,4 @@
 # Digital Asset Intelligence Dashboard
-**BUFN403 Capstone — Team 5 | Spring 2026 | American Bankers Association & Google**
 
 A multi-dimensional digital asset classification and intent analysis platform for 16 major U.S. financial institutions, built on original NLP scoring of 128 earnings call Q&A transcripts (Q1 2024–Q4 2025), Gemini-assisted clustering, and live web research conducted April 2026.
 
